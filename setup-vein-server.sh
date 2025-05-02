@@ -389,6 +389,7 @@ main() {
     echo -e "  5. Download and install the VEIN server"
     echo -e "  6. Configure server settings"
     echo -e "  7. Set up a systemd service"
+    echo -e "  8. Optionally install a dashboard"
     echo ""
     echo -e "Press ${BOLD}ENTER${NC} to begin or ${BOLD}CTRL+C${NC} to cancel..."
     read -r
