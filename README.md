@@ -5,6 +5,9 @@ This is a guided bash script for easy setup of a VEIN Demo dedicated server incl
 
 ## Screenshots
 
+### Dashboard
+![App Screenshot](https://i.imgur.com/1pDEitr.png)
+
 ### setup-vein-server.sh
 ![App Screenshot](https://i.imgur.com/jaJuMP4.png)
 
