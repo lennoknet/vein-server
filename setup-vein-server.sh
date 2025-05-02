@@ -313,6 +313,8 @@ display_completion() {
     echo -e "   ${BOLD}Restart server:${NC} systemctl restart vein-server.service"
     echo -e "   ${BOLD}Check status:${NC} systemctl status vein-server.service"
     echo -e "   ${BOLD}View logs:${NC} journalctl -u vein-server.service -f"
+    echo -e "   ${BOLD}View dashboard:${NC} http://$(hostname -I | awk '{print $1}'):5000"
+
     echo ""
     
     if [ "${START_ON_BOOT}" = "true" ]; then
@@ -328,6 +330,46 @@ display_completion() {
         echo -e "${YELLOW}Starting VEIN server...${NC}"
         systemctl start vein-server.service
         echo -e "${GREEN}Server started!${NC}"
+    fi
+}
+
+# Function to install optional dashboard
+install_dashboard() {
+    section_header "Dashboard Installation"
+    read -p "Would you like to install the dashboard at http://$(hostname -I | awk '{print $1}'):5000? (y/n): " install_dashboard
+
+    if [[ "$install_dashboard" =~ ^[Yy]$ ]]; then
+        section_header "Installing Python3 and Flask"
+        run_silent "Installing python3" "apt install -y python3"
+        run_silent "Installing python3-pip" "apt install -y python3-pip"
+        run_silent "Installing Flask" "pip3 install flask"
+
+        section_header "Setting up Dashboard Service"
+        DASHBOARD_PATH="${INSTALL_PATH}/dash"
+        SERVICE_FILE="/etc/systemd/system/vein-dashboard.service"
+
+        cat <<EOF > "$SERVICE_FILE"
+[Unit]
+Description=VEIN Dashboard
+After=network.target
+
+[Service]
+User=steam
+WorkingDirectory=${DASHBOARD_PATH}
+ExecStart=/usr/bin/python3 ${DASHBOARD_PATH}/app.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+        run_silent "Reloading systemd daemon" "systemctl daemon-reload"
+        run_silent "Enabling dashboard service" "systemctl enable vein-dashboard"
+        run_silent "Starting dashboard service" "systemctl start vein-dashboard"
+
+        echo -e "${GREEN}Dashboard installed and running at http://$(hostname -I | awk '{print $1}'):5000${NC}"
+    else
+        echo -e "${YELLOW}Dashboard installation skipped.${NC}"
     fi
 }
 
@@ -384,6 +426,7 @@ main() {
     install_vein_server
     create_server_config
     create_systemd_service
+    install_dashboard
     display_completion
 }
 
