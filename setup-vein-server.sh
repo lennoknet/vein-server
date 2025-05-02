@@ -176,6 +176,7 @@ configure_firewall() {
     
     run_silent "Allowing game port ${PORT}/udp" "ufw allow ${PORT}/udp"
     run_silent "Allowing query port ${QUERY_PORT}/udp" "ufw allow ${QUERY_PORT}/udp"
+    run_silent "Allowing dashboard port 5000/udp" "ufw allow 5000/udp"
     run_silent "Enabling firewall" "ufw --force enable"
 }
 
