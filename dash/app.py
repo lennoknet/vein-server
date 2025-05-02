@@ -9,7 +9,8 @@ from datetime import datetime
 app = Flask(__name__)
 
 # Global variables to store data
-logs = []
+from collections import deque
+logs = deque(maxlen=800)
 service_status = {"status": "unknown", "message": ""}
 action_status = {"action": "none", "status": "none", "message": ""}
 
@@ -110,7 +111,7 @@ def stop_service():
 
 @app.route('/get-logs', methods=['GET'])
 def get_logs():
-    return jsonify({"logs": logs})
+    return jsonify({"logs": list(logs)})
 
 @app.route('/get-action-status', methods=['GET'])
 def get_action_status():
@@ -187,9 +188,6 @@ def watch_logs():
             line = process.stdout.readline().strip()
             if line:
                 logs.append(line)
-                # Keep only the last 1000 lines
-                if len(logs) > 1000:
-                    logs = logs[-1000:]
             time.sleep(0.1)
     except Exception as e:
         logs.append(f"Error watching logs: {str(e)}")
