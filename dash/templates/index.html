@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vein Server Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #0e0101;
+      --primary: rgba(131, 255, 60, 0.25);
+      --secondary:rgba(148, 147, 90, 0.25);
+      --success: #22c55e;
+      --error:rgba(239, 68, 68, 0.6);
+      --warning: #facc15;
+      --text: #dddddd;
+      --info: #60a5fa;
+      --border: rgba(255, 255, 255, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 1.5rem;
+      background: radial-gradient(circle at top, #300303, var(--bg-color));
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      min-width: 700px;
+      width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .logo {
+      margin-right: 80px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: -0.5px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background 0.2s ease, opacity 0.2s ease;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    .btn-primary { background: var(--primary); border-color: var(--primary); color: white; }
+    .btn-secondary { background: var(--secondary); border-color: var(--secondary); color: white; }
+    .btn-destructive { background: var(--error); border-color: var(--error); color: white; }
+
+    section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .ml-auto {
+      margin-left: auto;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 0;
+      margin-top: 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .logs {
+      flex: 1;
+      overflow: auto;
+      resize: none;
+      white-space: pre-wrap;
+      border: 1px solid var(--border);
+      padding: 0.5rem;
+    }
+
+    .logs * {
+      font-family: monospace;
+      line-height:1.6em;
+    }
+
+    .logs::-webkit-scrollbar {
+      width: 8px;
+      background: transparent;
+    }
+
+    .logs::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    .logs::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .logs {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    }
+
+
+    .status {
+      font-size: 0.9rem;
+    }
+
+    .status.success { color: var(--success); }
+    .status.error { color: var(--error); }
+    .status.running { color: var(--primary); }
+
+    .log-line.error { color: var(--error); }
+    .log-line.warning { color: var(--warning); }
+    .log-line.info { color: var(--info); }
+
+    #confirm-dialog {
+      border: none;
+      padding: 1.5rem;
+      max-width: 420px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .text-muted-foreground {
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+  
+      <section>
+        <img class="logo" src="static/logo.png">
+        <button id="start-service" class="btn-primary">Start</button>
+        <button id="stop-service" class="btn-destructive">Stop</button>
+        <button id="restart-service" class="btn-secondary">Restart</button>
+        <button id="clear-logs">Clear Logs</button>
+        <a href="/download-logs" download><button id="start-service">Download Logs</button></a>
+        <label class="ml-auto">
+          <input type="checkbox" id="auto-scroll" checked>
+          Auto-scroll
+        </label>
+      </section>
+  
+      <div id="restart-status" class="status"></div>
+  
+      <div class="glass">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
+          <h2 style="font-size: 1.1rem; font-weight: 600;">Logs</h2>
+          <span id="log-count" class="text-muted-foreground">0 entries</span>
+        </div>
+        <div id="logs" class="logs"></div>
+      </div>
+    </div>
+  
+    <dialog id="confirm-dialog">
+      <div style="display:flex; flex-direction:column; gap:1rem;">
+        <p id="confirm-message">⚠️ Are you sure? ⚠️</p>
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+          <button onclick="dialog.close()">Cancel</button>
+          <button id="confirm-yes" class="btn-destructive">Confirm</button>
+        </div>
+      </div>
+    </dialog>
+  
+    <script>
+      const logsContainer = document.getElementById("logs");
+      const logCount = document.getElementById("log-count");
+      const autoScroll = document.getElementById("auto-scroll");
+      const statusBox = document.getElementById("restart-status");
+      const dialog = document.getElementById("confirm-dialog");
+      const confirmMessage = document.getElementById("confirm-message");
+      const confirmYes = document.getElementById("confirm-yes");
+      let logs = [];
+  
+      function updateStatus(type, msg) {
+        statusBox.className = `status ${type}`;
+        statusBox.textContent = msg;
+      }
+  
+      function highlightLog(line) {
+        const div = document.createElement("div");
+        div.textContent = line;
+  
+        const lower = line.toLowerCase();
+        if (lower.includes("error")) {
+          div.classList.add("log-line", "error");
+        } else if (lower.includes("warning") || lower.includes("warn")) {
+          div.classList.add("log-line", "warning");
+        } else if (lower.includes("info")) {
+          div.classList.add("log-line", "info");
+        }
+  
+        return div;
+      }
+  
+      function fetchLogs() {
+        fetch("/get-logs")
+          .then(res => res.json())
+          .then(data => {
+            if (data.logs.length !== logs.length) {
+              const newLogs = data.logs.slice(logs.length);
+              logs = data.logs;
+              newLogs.forEach(log => {
+                const line = highlightLog(log);
+                logsContainer.appendChild(line);
+              });
+              logCount.textContent = `${logs.length} entries`;
+              if (autoScroll.checked) {
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+              }
+            }
+          });
+      }
+  
+      function performAction(endpoint, type) {
+        fetch(endpoint, { method: "POST" })
+          .then(() => pollStatus())
+          .catch(() => updateStatus("error", `Failed to ${type}`));
+      }
+  
+      function pollStatus() {
+        fetch("/get-action-status")
+          .then(res => res.json())
+          .then(data => {
+            updateStatus(data.status, data.message);
+            if (data.status === "running") {
+              setTimeout(pollStatus, 1000);
+            }
+          });
+      }
+  
+      function confirmAndRun(type, endpoint) {
+        confirmMessage.textContent = `⚠️ Are you sure you want to ${type} the server? ⚠️`;
+        dialog.showModal();
+        confirmYes.onclick = () => {
+          dialog.close();
+          performAction(endpoint, type);
+        };
+      }
+  
+      document.getElementById("clear-logs").onclick = () => {
+        fetch("/clear-logs", { method: "POST" })
+          .then(() => {
+            logsContainer.innerHTML = "";
+            logs = [];
+            logCount.textContent = `0 entries`;
+          })
+          .catch(() => alert("Failed to clear logs."));
+      };
+  
+      document.getElementById("restart-service").onclick = () => confirmAndRun("restart", "/restart-service");
+      document.getElementById("stop-service").onclick = () => confirmAndRun("stop", "/stop-service");
+      document.getElementById("start-service").onclick = () => confirmAndRun("start", "/start-service");
+  
+      setInterval(fetchLogs, 1000);
+      fetchLogs();
+    </script>
+  </body>
+</html>
