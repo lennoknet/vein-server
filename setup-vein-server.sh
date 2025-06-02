@@ -334,22 +334,44 @@ display_completion() {
     fi
 }
 
-# Function to install optional dashboard
+# Function to install optional dashboard - system packages only
 install_dashboard() {
     section_header "Dashboard Installation"
-    read -p "Would you like to install the dashboard at http://$(hostname -I | awk '{print $1}'):5000? (y/n): " install_dashboard
+    read -p "Would you like to install the dashboard at http://$(hostname -I | awk '{print $1}'):5000? (y/n): " dashboard_choice
 
-    if [[ "$install_dashboard" =~ ^[Yy]$ ]]; then
+    if [[ "$dashboard_choice" =~ ^[Yy]$ ]]; then
+        # User wants dashboard - proceed with installation
         section_header "Installing Python3 and Flask"
         run_silent "Installing python3" "apt install -y python3"
-        run_silent "Installing python3-pip" "apt install -y python3-pip"
-        run_silent "Installing Flask" "pip3 install flask"
+        
+        # Try to install Flask via system package manager
+        if ! run_silent "Installing Flask via apt" "apt install -y python3-flask"; then
+            echo -e "${RED}Failed to install Flask via system packages.${NC}"
+            echo -e "${YELLOW}Trying alternative method with pip...${NC}"
+            
+            run_silent "Installing python3-pip" "apt install -y python3-pip"
+            
+            # Use pip with --break-system-packages as last resort
+            if ! run_silent "Installing Flask via pip" "python3 -m pip install --break-system-packages flask"; then
+                echo -e "${RED}Failed to install Flask. Dashboard installation aborted.${NC}"
+                return 1
+            fi
+        fi
 
         section_header "Setting up Dashboard Service"
-        DASHBOARD_PATH="${INSTALL_PATH}/dash"
+        DASHBOARD_PATH="/home/steam/vein-dashboard"
         SERVICE_FILE="/etc/systemd/system/vein-dashboard.service"
 
-        cat <<EOF > "$SERVICE_FILE"
+        # Setup dashboard files
+        run_silent "Creating dashboard directory" "mkdir -p \"${DASHBOARD_PATH}\""
+        
+        # Copy dashboard files or fail gracefully
+        if [ -d "dash" ]; then
+            run_silent "Copying dashboard files" "cp -r dash/* \"${DASHBOARD_PATH}/\""
+            run_silent "Setting dashboard permissions" "chown -R steam:steam \"${DASHBOARD_PATH}\""
+            
+            # Create systemd service (no virtual environment)
+            cat <<EOF > "$SERVICE_FILE"
 [Unit]
 Description=VEIN Dashboard
 After=network.target
@@ -364,12 +386,22 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
-        run_silent "Reloading systemd daemon" "systemctl daemon-reload"
-        run_silent "Enabling dashboard service" "systemctl enable vein-dashboard"
-        run_silent "Starting dashboard service" "systemctl start vein-dashboard"
+            run_silent "Reloading systemd daemon" "systemctl daemon-reload"
+            run_silent "Enabling dashboard service" "systemctl enable vein-dashboard"
+            run_silent "Starting dashboard service" "systemctl start vein-dashboard"
 
-        echo -e "${GREEN}Dashboard installed and running at http://$(hostname -I | awk '{print $1}'):5000${NC}"
+            echo -e "${GREEN}Dashboard installed and running at http://$(hostname -I | awk '{print $1}'):5000${NC}"
+            echo -e "${YELLOW}Dashboard installed in: ${DASHBOARD_PATH}${NC}"
+        else
+            echo -e "${RED}Dashboard files not found in 'dash' directory.${NC}"
+            echo -e "${YELLOW}Dashboard installation failed - files missing.${NC}"
+            echo -e "${YELLOW}Please ensure the 'dash' directory with dashboard files exists.${NC}"
+            # Clean up the partial installation
+            run_silent "Cleaning up failed installation" "rm -rf \"${DASHBOARD_PATH}\""
+            return 1
+        fi
     else
+        # User doesn't want dashboard - skip entirely
         echo -e "${YELLOW}Dashboard installation skipped.${NC}"
     fi
 }
