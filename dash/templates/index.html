@@ -4,261 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vein Server Dashboard</title>
-  <style>
-    :root {
-      --bg-color: #0e0101;
-      --primary: rgba(131, 255, 60, 0.25);
-      --secondary:rgba(148, 147, 90, 0.25);
-      --success: #22c55e;
-      --error:rgba(239, 68, 68, 0.6);
-      --warning: #facc15;
-      --text: #dddddd;
-      --info: #60a5fa;
-      --border: rgba(255, 255, 255, 0.2);
-    }
-
-    * {
-      box-sizing: border-box;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-    }
-
-    body {
-      margin: 0;
-      padding: 1.5rem;
-      background: radial-gradient(circle at top, #300303, var(--bg-color));
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .container {
-      min-width: 700px;
-      width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .controls-section {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .logo {
-      height: 80px;
-      margin-right: 1rem;
-    }
-
-    .control-buttons {
-      display: flex;
-      gap: 0.5rem;
-      margin-right: 1rem;
-    }
-
-    .status-info {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      margin-left: auto;
-      font-size: 0.85rem;
-    }
-
-    .status-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      font-weight: bold;
-      letter-spacing: -0.5px;
-    }
-
-    button {
-      padding: 0.5rem 1rem;
-      font-size: 0.9rem;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.05);
-      cursor: pointer;
-      transition: background 0.2s ease, opacity 0.2s ease;
-      white-space: nowrap;
-    }
-
-    button:hover {
-      opacity: 0.85;
-    }
-
-    .btn-primary { background: var(--primary); border-color: var(--primary); color: white; }
-    .btn-secondary { background: var(--secondary); border-color: var(--secondary); color: white; }
-    .btn-destructive { background: var(--error); border-color: var(--error); color: white; }
-
-    .glass {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 1rem;
-      border-radius: 8px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .info-label {
-      font-weight: 500;
-      opacity: 0.8;
-    }
-
-    .info-value {
-      font-family: monospace;
-      color: var(--success);
-    }
-
-    .logs-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding-bottom: 0.5rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .logs {
-      flex: 1;
-      overflow: auto;
-      resize: none;
-      white-space: pre-wrap;
-      border: 1px solid var(--border);
-      padding: 0.5rem;
-      border-radius: 4px;
-    }
-
-    .logs * {
-      font-family: monospace;
-      line-height:1.6em;
-    }
-
-    .logs::-webkit-scrollbar {
-      width: 8px;
-      background: transparent;
-    }
-
-    .logs::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
-    }
-
-    .logs::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.4);
-    }
-
-    .logs {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-    }
-
-    .status {
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-    }
-
-    .status.success { color: var(--success); }
-    .status.error { color: var(--error); }
-    .status.running { color: var(--primary); }
-
-    .log-line.error { color: var(--error); }
-    .log-line.warning { color: var(--warning); }
-    .log-line.info { color: var(--info); }
-
-    #confirm-dialog {
-      border: none;
-      padding: 1.5rem;
-      max-width: 420px;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-    }
-
-    .text-muted-foreground {
-      opacity: 0.7;
-    }
-
-    .service-status {
-      display: inline-block;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
-
-    .service-status.running {
-      background: rgba(34, 197, 94, 0.2);
-      color: var(--success);
-    }
-
-    .service-status.stopped {
-      background: rgba(239, 68, 68, 0.2);
-      color: var(--error);
-    }
-
-    .service-status.unknown {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text);
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 1024px) {
-      .controls-section {
-        flex-wrap: wrap;
-        gap: 0.75rem;
-      }
-      
-      .status-info {
-        margin-left: 0;
-        margin-top: 0.5rem;
-        width: 100%;
-        justify-content: flex-start;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        min-width: auto;
-        width: 100%;
-      }
-      
-      .control-buttons {
-        flex-wrap: wrap;
-      }
-      
-      .status-info {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <div class="container">
   
       <div class="controls-section">
-        <img class="logo" src="static/logo.png" alt="VEIN Server Logo">
+        <img class="logo" src="{{ url_for('static', filename='logo.png') }}" alt="VEIN Server Logo">
         
         <div class="control-buttons">
           <button id="start-service" class="btn-primary">Start</button>
@@ -288,178 +40,32 @@
   
       <div class="glass">
         <div class="logs-header">
-          <h2 style="font-size: 1.1rem; font-weight: 600; margin: 0;">Logs</h2>
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;">
-              <input type="checkbox" id="filter-errors">
-              Show Errors Only
-            </label>
-            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;">
-              <input type="checkbox" id="auto-scroll" checked>
-              Auto-scroll
-            </label>
-          </div>
+          <h2>Logs</h2>
+            <div class="logs-controls">
+              <label class="logs-filter">
+                <input type="checkbox" id="filter-errors">
+                Show Errors Only
+              </label>
+              <label class="logs-filter">
+                <input type="checkbox" id="auto-scroll" checked>
+                Auto-scroll
+              </label>
+            </div>
         </div>
         <div id="logs" class="logs"></div>
       </div>
     </div>
   
     <dialog id="confirm-dialog">
-      <div style="display:flex; flex-direction:column; gap:1rem;">
+      <div class="dialog-content">
         <p id="confirm-message">⚠️ Are you sure? ⚠️</p>
-        <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+        <div class="dialog-actions">
           <button onclick="dialog.close()">Cancel</button>
           <button id="confirm-yes" class="btn-destructive">Confirm</button>
         </div>
       </div>
     </dialog>
   
-    <script>
-      const logsContainer = document.getElementById("logs");
-      const autoScroll = document.getElementById("auto-scroll");
-      const filterErrors = document.getElementById("filter-errors");
-      const statusBox = document.getElementById("restart-status");
-      const dialog = document.getElementById("confirm-dialog");
-      const confirmMessage = document.getElementById("confirm-message");
-      const confirmYes = document.getElementById("confirm-yes");
-      const serviceStatus = document.getElementById("service-status");
-      const serviceUptime = document.getElementById("service-uptime");
-      const serviceStarted = document.getElementById("service-started");
-      
-      let logs = [];
-      let allLogElements = [];
-
-      function updateStatus(type, msg) {
-        statusBox.className = `status ${type}`;
-        statusBox.textContent = msg;
-      }
-
-      function highlightLog(line) {
-        const div = document.createElement("div");
-        div.textContent = line;
-
-        const lower = line.toLowerCase();
-        if (lower.includes("error")) {
-          div.classList.add("log-line", "error");
-          div.dataset.logType = "error";
-        } else if (lower.includes("warning") || lower.includes("warn")) {
-          div.classList.add("log-line", "warning");
-          div.dataset.logType = "warning";
-        } else if (lower.includes("info")) {
-          div.classList.add("log-line", "info");
-          div.dataset.logType = "info";
-        } else {
-          div.dataset.logType = "normal";
-        }
-
-        return div;
-      }
-
-      function filterLogs() {
-        const showErrorsOnly = filterErrors.checked;
-        
-        allLogElements.forEach(element => {
-          if (showErrorsOnly) {
-            element.style.display = element.dataset.logType === "error" ? "block" : "none";
-          } else {
-            element.style.display = "block";
-          }
-        });
-
-        if (autoScroll.checked) {
-          logsContainer.scrollTop = logsContainer.scrollHeight;
-        }
-      }
-
-      function fetchLogs() {
-        fetch("/get-logs")
-          .then(res => res.json())
-          .then(data => {
-            if (data.logs.length !== logs.length) {
-              const newLogs = data.logs.slice(logs.length);
-              logs = data.logs;
-              
-              // Add new logs to display
-              newLogs.forEach(log => {
-                const line = highlightLog(log);
-                logsContainer.appendChild(line);
-                allLogElements.push(line);
-              });
-              
-              // Apply current filter
-              filterLogs();
-            }
-          })
-          .catch(err => console.error("Error fetching logs:", err));
-      }
-
-      function fetchServiceInfo() {
-        fetch("/get-service-info")
-          .then(res => res.json())
-          .then(data => {
-            // Update service status
-            serviceStatus.textContent = data.status === "running" ? "Running" : 
-                                      data.status === "stopped" ? "Stopped" : "Unknown";
-            serviceStatus.className = `service-status ${data.status}`;
-            
-            // Update uptime and start time
-            serviceUptime.textContent = data.uptime;
-            serviceStarted.textContent = data.started_at;
-          })
-          .catch(err => console.error("Error fetching service info:", err));
-      }
-
-      function performAction(endpoint, type) {
-        fetch(endpoint, { method: "POST" })
-          .then(() => pollStatus())
-          .catch(() => updateStatus("error", `Failed to ${type}`));
-      }
-
-      function pollStatus() {
-        fetch("/get-action-status")
-          .then(res => res.json())
-          .then(data => {
-            updateStatus(data.status, data.message);
-            if (data.status === "running") {
-              setTimeout(pollStatus, 1000);
-            }
-          });
-      }
-
-      function confirmAndRun(type, endpoint) {
-        confirmMessage.textContent = `⚠️ Are you sure you want to ${type} the server? ⚠️`;
-        dialog.showModal();
-        confirmYes.onclick = () => {
-          dialog.close();
-          performAction(endpoint, type);
-        };
-      }
-
-      document.getElementById("clear-logs").onclick = () => {
-        fetch("/clear-logs", { method: "POST" })
-          .then(() => {
-            logsContainer.innerHTML = "";
-            logs = [];
-            allLogElements = [];
-          })
-          .catch(() => alert("Failed to clear logs."));
-      };
-
-      // Add event listener for error filter
-      filterErrors.addEventListener("change", filterLogs);
-
-      document.getElementById("restart-service").onclick = () => confirmAndRun("restart", "/restart-service");
-      document.getElementById("stop-service").onclick = () => confirmAndRun("stop", "/stop-service");
-      document.getElementById("start-service").onclick = () => confirmAndRun("start", "/start-service");
-
-      // Update logs every second
-      setInterval(fetchLogs, 1000);
-      // Update service info every 5 seconds
-      setInterval(fetchServiceInfo, 5000);
-      
-      // Initial fetch
-      fetchLogs();
-      fetchServiceInfo();
-    </script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
   </body>
 </html>
