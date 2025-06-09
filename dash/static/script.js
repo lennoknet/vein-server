@@ -4,6 +4,7 @@ const filterErrors = document.getElementById("filter-errors");
 const filterChat = document.getElementById("filter-chat");
 const filterKilled = document.getElementById("filter-killed");
 const filterClaimed = document.getElementById("filter-claimed");
+const filterTransfer = document.getElementById("filter-transfer");
 const statusBox = document.getElementById("restart-status");
 const dialog = document.getElementById("confirm-dialog");
 const confirmMessage = document.getElementById("confirm-message");
@@ -17,6 +18,7 @@ let allLogElements = [];
 let lastLogCount = 0;
 let logStallCount = 0;
 let connectionStatus = "connected";
+let nextLineIsTransfer = false;
 
 function updateStatus(type, msg) {
   statusBox.className = `status ${type}`;
@@ -33,23 +35,39 @@ function highlightLog(line) {
   if (lower.includes("logveinchat")) {
     div.classList.add("log-line", "chat");
     div.dataset.logType = "chat";
+    nextLineIsTransfer = false;
+  } else if (lower.includes("item transfer")) {
+    div.classList.add("log-line", "transfer");
+    div.dataset.logType = "transfer";
+    nextLineIsTransfer = true; // Mark that the next line should also be treated as transfer
+  } else if (nextLineIsTransfer) {
+    // This line follows an "item transfer" line, so it's also a transfer log
+    div.classList.add("log-line", "transfer");
+    div.dataset.logType = "transfer";
+    nextLineIsTransfer = false; // Reset the flag
   } else if (lower.includes("killed")) {
     div.classList.add("log-line", "killed");
     div.dataset.logType = "killed";
+    nextLineIsTransfer = false;
   } else if (lower.includes("claimed")) {
     div.classList.add("log-line", "claimed");
     div.dataset.logType = "claimed";
+    nextLineIsTransfer = false;
   } else if (lower.includes("error")) {
     div.classList.add("log-line", "error");
     div.dataset.logType = "error";
+    nextLineIsTransfer = false;
   } else if (lower.includes("warning") || lower.includes("warn")) {
     div.classList.add("log-line", "warning");
     div.dataset.logType = "warning";
+    nextLineIsTransfer = false;
   } else if (lower.includes("info")) {
     div.classList.add("log-line", "info");
     div.dataset.logType = "info";
+    nextLineIsTransfer = false;
   } else {
     div.dataset.logType = "normal";
+    nextLineIsTransfer = false;
   }
 
   return div;
@@ -60,9 +78,10 @@ function filterLogs() {
   const showChatOnly = filterChat.checked;
   const showKilledOnly = filterKilled.checked;
   const showClaimedOnly = filterClaimed.checked;
+  const showTransferOnly = filterTransfer.checked;
   
   // Check if any exclusive filters are active
-  const exclusiveFilters = [showErrorsOnly, showChatOnly, showKilledOnly, showClaimedOnly];
+  const exclusiveFilters = [showErrorsOnly, showChatOnly, showKilledOnly, showClaimedOnly, showTransferOnly];
   const anyExclusiveFilter = exclusiveFilters.some(filter => filter);
   
   allLogElements.forEach(element => {
@@ -82,6 +101,9 @@ function filterLogs() {
         shouldShow = true;
       }
       if (showClaimedOnly && element.dataset.logType === "claimed") {
+        shouldShow = true;
+      }
+      if (showTransferOnly && element.dataset.logType === "transfer") {
         shouldShow = true;
       }
     }
@@ -242,6 +264,7 @@ document.getElementById("clear-logs").onclick = () => {
       logsContainer.innerHTML = "";
       logs = [];
       allLogElements = [];
+      nextLineIsTransfer = false; // Reset the transfer flag when clearing logs
       updateStatus("success", "Logs cleared");
     })
     .catch(err => {
@@ -278,6 +301,7 @@ filterErrors.addEventListener("change", filterLogs);
 filterChat.addEventListener("change", filterLogs);
 filterKilled.addEventListener("change", filterLogs);
 filterClaimed.addEventListener("change", filterLogs);
+filterTransfer.addEventListener("change", filterLogs);
 
 document.getElementById("restart-service").onclick = () => confirmAndRun("restart", "/restart-service");
 document.getElementById("stop-service").onclick = () => confirmAndRun("stop", "/stop-service");

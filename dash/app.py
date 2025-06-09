@@ -376,7 +376,6 @@ def clear_logs():
 def restart_log_watcher_endpoint():
     """Manual endpoint to restart log watcher"""
     restart_log_watcher()
-    return jsonify({"message": "Log watcher restarted"})
 
 # Cleanup function
 def cleanup():

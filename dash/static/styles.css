@@ -47,7 +47,7 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  margin-bottom: 1rem;
+  margin-bottom: .2rem;
   flex-wrap: wrap;
 }
 
@@ -194,7 +194,7 @@ button:hover {
 
 .status {
   font-size: 0.9rem;
-  margin-top: 0.5rem;
+  margin: 0.5rem 0;
 }
 
 .status.success { color: var(--success); }
@@ -207,6 +207,7 @@ button:hover {
 .log-line.chat { color: var(--chat); }
 .log-line.killed { color: var(--killed); }
 .log-line.claimed { color: var(--claimed); }
+.log-line.transfer { color: var(--transfer); }
 
 #confirm-dialog {
   border: none;
