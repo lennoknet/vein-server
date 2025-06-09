@@ -6,6 +6,7 @@ import os
 import json
 from datetime import datetime, timedelta
 from collections import deque
+import signal
 
 app = Flask(__name__)
 
@@ -17,6 +18,11 @@ full_logs = deque()
 service_status = {"status": "unknown", "message": ""}
 action_status = {"action": "none", "status": "none", "message": ""}
 service_info = {"uptime": "Unknown", "started_at": "Unknown", "status": "unknown"}
+
+# Log watching variables
+log_process = None
+log_thread = None
+log_restart_count = 0
 
 @app.route('/')
 def index():
@@ -269,26 +275,73 @@ def check_service_status():
             "message": f"Error checking service status: {str(e)}"
         }
 
-def watch_logs():
-    global display_logs, full_logs
+def restart_log_watcher():
+    """Restart the log watching process"""
+    global log_process, log_restart_count
+    
+    # Kill existing process if it exists
+    if log_process:
+        try:
+            log_process.terminate()
+            log_process.wait(timeout=5)
+        except:
+            try:
+                log_process.kill()
+                log_process.wait(timeout=2)
+            except:
+                pass
+    
+    log_restart_count += 1
+    error_msg = f"Log watcher restarted ({log_restart_count})"
+    display_logs.append(error_msg)
+    full_logs.append(error_msg)
+    
+    # Start new process
     try:
-        process = subprocess.Popen(
+        log_process = subprocess.Popen(
             ["journalctl", "-u", "vein-server.service", "-f", "-n", "0", "--no-pager"],
             stdout=subprocess.PIPE,
-            text=True
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+            universal_newlines=True
         )
-        
-        while True:
-            line = process.stdout.readline().strip()
-            if line:
-                # Add to both display logs (rolling) and full logs (complete)
-                display_logs.append(line)
-                full_logs.append(line)
-            time.sleep(0.1)
     except Exception as e:
-        error_msg = f"Error watching logs: {str(e)}"
+        error_msg = f"Failed to restart log watcher: {str(e)}"
         display_logs.append(error_msg)
         full_logs.append(error_msg)
+
+def watch_logs():
+    global display_logs, full_logs, log_process
+    
+    while True:
+        try:
+            if not log_process or log_process.poll() is not None:
+                restart_log_watcher()
+            
+            if log_process:
+                # Set a timeout for reading
+                line = log_process.stdout.readline()
+                if line:
+                    line = line.strip()
+                    if line:
+                        # Add to both display logs (rolling) and full logs (complete)
+                        display_logs.append(line)
+                        full_logs.append(line)
+                else:
+                    # No line received, check if process is still alive
+                    if log_process.poll() is not None:
+                        # Process died, restart it
+                        restart_log_watcher()
+                    time.sleep(0.1)
+            else:
+                time.sleep(1)
+                
+        except Exception as e:
+            error_msg = f"Error in log watcher: {str(e)}"
+            display_logs.append(error_msg)
+            full_logs.append(error_msg)
+            time.sleep(5)  # Wait before trying again
 
 def initialize_logs():
     """Initialize logs with recent entries"""
@@ -319,7 +372,30 @@ def clear_logs():
     full_logs.clear()
     return jsonify({"message": "Logs cleared"})
 
+@app.route('/restart-log-watcher', methods=['POST'])
+def restart_log_watcher_endpoint():
+    """Manual endpoint to restart log watcher"""
+    restart_log_watcher()
+    return jsonify({"message": "Log watcher restarted"})
+
+# Cleanup function
+def cleanup():
+    global log_process
+    if log_process:
+        try:
+            log_process.terminate()
+            log_process.wait(timeout=5)
+        except:
+            try:
+                log_process.kill()
+            except:
+                pass
+
 if __name__ == '__main__':
+    # Setup signal handlers for clean shutdown
+    import atexit
+    atexit.register(cleanup)
+    
     # Check initial service status
     check_service_status()
     update_service_info()

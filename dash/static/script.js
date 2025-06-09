@@ -14,6 +14,9 @@ const serviceStarted = document.getElementById("service-started");
 
 let logs = [];
 let allLogElements = [];
+let lastLogCount = 0;
+let logStallCount = 0;
+let connectionStatus = "connected";
 
 function updateStatus(type, msg) {
   statusBox.className = `status ${type}`;
@@ -91,9 +94,45 @@ function filterLogs() {
   }
 }
 
+function checkLogStall() {
+  // Check if logs have stopped updating
+  if (logs.length === lastLogCount) {
+    logStallCount++;
+    if (logStallCount >= 30) { // 30 seconds without new logs
+      if (connectionStatus === "connected") {
+        connectionStatus = "stalled";
+        updateStatus("warning", "Log connection may be stalled - trying to reconnect...");
+        
+        // Try to restart the log watcher
+        fetch("/restart-log-watcher", { method: "POST" })
+          .then(() => {
+            logStallCount = 0;
+            connectionStatus = "connected";
+            updateStatus("success", "Log watcher restarted");
+          })
+          .catch(() => {
+            updateStatus("error", "Failed to restart log watcher");
+          });
+      }
+    }
+  } else {
+    logStallCount = 0;
+    if (connectionStatus !== "connected") {
+      connectionStatus = "connected";
+      updateStatus("success", "Log connection restored");
+    }
+  }
+  lastLogCount = logs.length;
+}
+
 function fetchLogs() {
   fetch("/get-logs")
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return res.json();
+    })
     .then(data => {
       if (data.logs.length !== logs.length) {
         const newLogs = data.logs.slice(logs.length);
@@ -108,14 +147,31 @@ function fetchLogs() {
         
         // Apply current filter
         filterLogs();
+        
+        // Reset connection issues
+        if (connectionStatus !== "connected") {
+          connectionStatus = "connected";
+          updateStatus("success", "Connection restored");
+        }
       }
     })
-    .catch(err => console.error("Error fetching logs:", err));
+    .catch(err => {
+      console.error("Error fetching logs:", err);
+      if (connectionStatus === "connected") {
+        connectionStatus = "error";
+        updateStatus("error", "Connection error - retrying...");
+      }
+    });
 }
 
 function fetchServiceInfo() {
   fetch("/get-service-info")
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return res.json();
+    })
     .then(data => {
       // Update service status
       serviceStatus.textContent = data.status === "running" ? "Running" : 
@@ -131,18 +187,36 @@ function fetchServiceInfo() {
 
 function performAction(endpoint, type) {
   fetch(endpoint, { method: "POST" })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return res.json();
+    })
     .then(() => pollStatus())
-    .catch(() => updateStatus("error", `Failed to ${type}`));
+    .catch(err => {
+      console.error(`Error ${type}ing service:`, err);
+      updateStatus("error", `Failed to ${type}: ${err.message}`);
+    });
 }
 
 function pollStatus() {
   fetch("/get-action-status")
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return res.json();
+    })
     .then(data => {
       updateStatus(data.status, data.message);
       if (data.status === "running") {
         setTimeout(pollStatus, 1000);
       }
+    })
+    .catch(err => {
+      console.error("Error polling status:", err);
+      updateStatus("error", "Connection error");
     });
 }
 
@@ -158,13 +232,46 @@ function confirmAndRun(type, endpoint) {
 // Event Listeners
 document.getElementById("clear-logs").onclick = () => {
   fetch("/clear-logs", { method: "POST" })
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return res.json();
+    })
     .then(() => {
       logsContainer.innerHTML = "";
       logs = [];
       allLogElements = [];
+      updateStatus("success", "Logs cleared");
     })
-    .catch(() => alert("Failed to clear logs."));
+    .catch(err => {
+      console.error("Error clearing logs:", err);
+      updateStatus("error", "Failed to clear logs");
+    });
 };
+
+// Add manual log watcher restart button if it exists
+const restartLogsBtn = document.getElementById("restart-logs");
+if (restartLogsBtn) {
+  restartLogsBtn.onclick = () => {
+    fetch("/restart-log-watcher", { method: "POST" })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(() => {
+        logStallCount = 0;
+        connectionStatus = "connected";
+        updateStatus("success", "Log watcher restarted");
+      })
+      .catch(err => {
+        console.error("Error restarting log watcher:", err);
+        updateStatus("error", "Failed to restart log watcher");
+      });
+  };
+}
 
 // Add event listeners for all filters
 filterErrors.addEventListener("change", filterLogs);
@@ -178,6 +285,10 @@ document.getElementById("start-service").onclick = () => confirmAndRun("start", 
 
 // Update logs every second
 setInterval(fetchLogs, 1000);
+
+// Check for log stalls every second
+setInterval(checkLogStall, 1000);
+
 // Update service info every 5 seconds
 setInterval(fetchServiceInfo, 5000);
 
