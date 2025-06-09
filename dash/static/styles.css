@@ -165,7 +165,7 @@ button:hover {
 
 .logs * {
   font-family: monospace;
-  line-height:1.6em;
+  line-height:1.2em;
 }
 
 .logs::-webkit-scrollbar {
