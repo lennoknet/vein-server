@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 BOLD='\033[1m'
 
 # Variables with defaults
-SERVER_NAME="Vein Server"
+SERVER_NAME="My New VEIN Demo Server"
 PUBLIC="true"
 MAX_PLAYERS=16
 SUPER_ADMIN_ID=""
@@ -235,12 +235,12 @@ MaxPlayers=${MAX_PLAYERS}
 
 [/Script/Vein.VeinGameSession]
 bPublic=${PUBLIC}
-ServerName=${SERVER_NAME}
+ServerName="${SERVER_NAME}"
 BindAddr=${BIND_ADDR}
 SuperAdminSteamIDs=${SUPER_ADMIN_ID}
 $([ -n "${ADMIN_ID}" ] && echo "AdminSteamIDs=${ADMIN_ID}")
 HeartbeatInterval=${HEARTBEAT_INTERVAL}
-Password=${PASSWORD}
+Password="${PASSWORD}"
 
 [OnlineSubsystemSteam]
 GameServerQueryPort=${QUERY_PORT}
