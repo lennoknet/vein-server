@@ -95,6 +95,16 @@
       overflow: hidden;
     }
 
+    .info-label {
+      font-weight: 500;
+      opacity: 0.8;
+    }
+
+    .info-value {
+      font-family: monospace;
+      color: var(--success);
+    }
+
     .logs {
       flex: 1;
       overflow: auto;
@@ -128,7 +138,6 @@
       scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
     }
 
-
     .status {
       font-size: 0.9rem;
     }
@@ -153,6 +162,29 @@
     .text-muted-foreground {
       opacity: 0.7;
     }
+
+    .service-status {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .service-status.running {
+      background: rgba(34, 197, 94, 0.2);
+      color: var(--success);
+    }
+
+    .service-status.stopped {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--error);
+    }
+
+    .service-status.unknown {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+    }
   </style>
 </head>
 <body>
@@ -164,7 +196,7 @@
         <button id="stop-service" class="btn-destructive">Stop</button>
         <button id="restart-service" class="btn-secondary">Restart</button>
         <button id="clear-logs">Clear Logs</button>
-        <a href="/download-logs" download><button id="start-service">Download Logs</button></a>
+        <a href="/download-logs" download><button id="download-logs">Download Full Logs</button></a>
         <label class="ml-auto">
           <input type="checkbox" id="auto-scroll" checked>
           Auto-scroll
@@ -176,7 +208,21 @@
       <div class="glass">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
           <h2 style="font-size: 1.1rem; font-weight: 600;">Logs</h2>
-          <span id="log-count" class="text-muted-foreground">0 entries</span>
+          <div style="display: flex; align-items: center; gap: 1.5rem; font-size: 0.85rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="info-label">Status:</span>
+              <span id="service-status" class="service-status unknown">Unknown</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="info-label">Uptime:</span>
+              <span id="service-uptime" class="info-value">Unknown</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="info-label">Started:</span>
+              <span id="service-started" class="info-value">Unknown</span>
+            </div>
+            <span id="log-count" class="text-muted-foreground">0 entries</span>
+          </div>
         </div>
         <div id="logs" class="logs"></div>
       </div>
@@ -200,17 +246,21 @@
       const dialog = document.getElementById("confirm-dialog");
       const confirmMessage = document.getElementById("confirm-message");
       const confirmYes = document.getElementById("confirm-yes");
+      const serviceStatus = document.getElementById("service-status");
+      const serviceUptime = document.getElementById("service-uptime");
+      const serviceStarted = document.getElementById("service-started");
+      
       let logs = [];
-  
+
       function updateStatus(type, msg) {
         statusBox.className = `status ${type}`;
         statusBox.textContent = msg;
       }
-  
+
       function highlightLog(line) {
         const div = document.createElement("div");
         div.textContent = line;
-  
+
         const lower = line.toLowerCase();
         if (lower.includes("error")) {
           div.classList.add("log-line", "error");
@@ -219,10 +269,10 @@
         } else if (lower.includes("info")) {
           div.classList.add("log-line", "info");
         }
-  
+
         return div;
       }
-  
+
       function fetchLogs() {
         fetch("/get-logs")
           .then(res => res.json())
@@ -230,24 +280,46 @@
             if (data.logs.length !== logs.length) {
               const newLogs = data.logs.slice(logs.length);
               logs = data.logs;
+              
+              // Add new logs to display
               newLogs.forEach(log => {
                 const line = highlightLog(log);
                 logsContainer.appendChild(line);
               });
+              
+              // Update counter
               logCount.textContent = `${logs.length} entries`;
+              
               if (autoScroll.checked) {
                 logsContainer.scrollTop = logsContainer.scrollHeight;
               }
             }
-          });
+          })
+          .catch(err => console.error("Error fetching logs:", err));
       }
-  
+
+      function fetchServiceInfo() {
+        fetch("/get-service-info")
+          .then(res => res.json())
+          .then(data => {
+            // Update service status
+            serviceStatus.textContent = data.status === "running" ? "Running" : 
+                                      data.status === "stopped" ? "Stopped" : "Unknown";
+            serviceStatus.className = `service-status ${data.status}`;
+            
+            // Update uptime and start time
+            serviceUptime.textContent = data.uptime;
+            serviceStarted.textContent = data.started_at;
+          })
+          .catch(err => console.error("Error fetching service info:", err));
+      }
+
       function performAction(endpoint, type) {
         fetch(endpoint, { method: "POST" })
           .then(() => pollStatus())
           .catch(() => updateStatus("error", `Failed to ${type}`));
       }
-  
+
       function pollStatus() {
         fetch("/get-action-status")
           .then(res => res.json())
@@ -258,7 +330,7 @@
             }
           });
       }
-  
+
       function confirmAndRun(type, endpoint) {
         confirmMessage.textContent = `⚠️ Are you sure you want to ${type} the server? ⚠️`;
         dialog.showModal();
@@ -267,23 +339,29 @@
           performAction(endpoint, type);
         };
       }
-  
+
       document.getElementById("clear-logs").onclick = () => {
         fetch("/clear-logs", { method: "POST" })
           .then(() => {
             logsContainer.innerHTML = "";
             logs = [];
-            logCount.textContent = `0 entries`;
+            logCount.textContent = "0 entries";
           })
           .catch(() => alert("Failed to clear logs."));
       };
-  
+
       document.getElementById("restart-service").onclick = () => confirmAndRun("restart", "/restart-service");
       document.getElementById("stop-service").onclick = () => confirmAndRun("stop", "/stop-service");
       document.getElementById("start-service").onclick = () => confirmAndRun("start", "/start-service");
-  
+
+      // Update logs every second
       setInterval(fetchLogs, 1000);
+      // Update service info every 5 seconds
+      setInterval(fetchServiceInfo, 5000);
+      
+      // Initial fetch
       fetchLogs();
+      fetchServiceInfo();
     </script>
   </body>
 </html>
