@@ -133,6 +133,11 @@ button:hover {
   margin-bottom: 0.15rem;
 }
 
+.logs-header h2 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
 .logs-controls {
   display: flex;
   gap: 1rem;
