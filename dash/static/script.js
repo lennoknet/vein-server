@@ -1,6 +1,9 @@
 const logsContainer = document.getElementById("logs");
 const autoScroll = document.getElementById("auto-scroll");
 const filterErrors = document.getElementById("filter-errors");
+const filterChat = document.getElementById("filter-chat");
+const filterKilled = document.getElementById("filter-killed");
+const filterClaimed = document.getElementById("filter-claimed");
 const statusBox = document.getElementById("restart-status");
 const dialog = document.getElementById("confirm-dialog");
 const confirmMessage = document.getElementById("confirm-message");
@@ -22,7 +25,18 @@ function highlightLog(line) {
   div.textContent = line;
 
   const lower = line.toLowerCase();
-  if (lower.includes("error")) {
+  
+  // Check for different log types in priority order
+  if (lower.includes("logveinchat")) {
+    div.classList.add("log-line", "chat");
+    div.dataset.logType = "chat";
+  } else if (lower.includes("killed")) {
+    div.classList.add("log-line", "killed");
+    div.dataset.logType = "killed";
+  } else if (lower.includes("claimed")) {
+    div.classList.add("log-line", "claimed");
+    div.dataset.logType = "claimed";
+  } else if (lower.includes("error")) {
     div.classList.add("log-line", "error");
     div.dataset.logType = "error";
   } else if (lower.includes("warning") || lower.includes("warn")) {
@@ -40,13 +54,36 @@ function highlightLog(line) {
 
 function filterLogs() {
   const showErrorsOnly = filterErrors.checked;
+  const showChatOnly = filterChat.checked;
+  const showKilledOnly = filterKilled.checked;
+  const showClaimedOnly = filterClaimed.checked;
+  
+  // Check if any exclusive filters are active
+  const exclusiveFilters = [showErrorsOnly, showChatOnly, showKilledOnly, showClaimedOnly];
+  const anyExclusiveFilter = exclusiveFilters.some(filter => filter);
   
   allLogElements.forEach(element => {
-    if (showErrorsOnly) {
-      element.style.display = element.dataset.logType === "error" ? "block" : "none";
-    } else {
-      element.style.display = "block";
+    let shouldShow = true;
+    
+    if (anyExclusiveFilter) {
+      // If any exclusive filter is active, only show matching types
+      shouldShow = false;
+      
+      if (showErrorsOnly && element.dataset.logType === "error") {
+        shouldShow = true;
+      }
+      if (showChatOnly && element.dataset.logType === "chat") {
+        shouldShow = true;
+      }
+      if (showKilledOnly && element.dataset.logType === "killed") {
+        shouldShow = true;
+      }
+      if (showClaimedOnly && element.dataset.logType === "claimed") {
+        shouldShow = true;
+      }
     }
+    
+    element.style.display = shouldShow ? "block" : "none";
   });
 
   if (autoScroll.checked) {
@@ -129,8 +166,11 @@ document.getElementById("clear-logs").onclick = () => {
     .catch(() => alert("Failed to clear logs."));
 };
 
-// Add event listener for error filter
+// Add event listeners for all filters
 filterErrors.addEventListener("change", filterLogs);
+filterChat.addEventListener("change", filterLogs);
+filterKilled.addEventListener("change", filterLogs);
+filterClaimed.addEventListener("change", filterLogs);
 
 document.getElementById("restart-service").onclick = () => confirmAndRun("restart", "/restart-service");
 document.getElementById("stop-service").onclick = () => confirmAndRun("stop", "/stop-service");

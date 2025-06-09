@@ -7,6 +7,9 @@
   --warning: #facc15;
   --text: #dddddd;
   --info: #60a5fa;
+  --chat: #a855f7;
+  --killed: #ef4444;
+  --claimed: #06b6d4;
   --border: rgba(255, 255, 255, 0.2);
 }
 
@@ -130,6 +133,26 @@ button:hover {
   margin-bottom: 0.75rem;
 }
 
+.logs-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.logs-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.logs-filter input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
 .logs {
   flex: 1;
   overflow: auto;
@@ -176,6 +199,9 @@ button:hover {
 .log-line.error { color: var(--error); }
 .log-line.warning { color: var(--warning); }
 .log-line.info { color: var(--info); }
+.log-line.chat { color: var(--chat); }
+.log-line.killed { color: var(--killed); }
+.log-line.claimed { color: var(--claimed); }
 
 #confirm-dialog {
   border: none;
@@ -243,5 +269,11 @@ button:hover {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+  }
+  
+  .logs-controls {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
   }
 }
