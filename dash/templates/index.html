@@ -41,8 +41,43 @@
       height: 100%;
     }
 
+    .controls-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
     .logo {
-      margin-right: 80px;
+      height: 40px;
+      margin-right: 1rem;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-right: 1rem;
+    }
+
+    .status-info {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-left: auto;
+      font-size: 0.85rem;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     h1 {
@@ -59,6 +94,7 @@
       background: rgba(255, 255, 255, 0.05);
       cursor: pointer;
       transition: background 0.2s ease, opacity 0.2s ease;
+      white-space: nowrap;
     }
 
     button:hover {
@@ -69,26 +105,13 @@
     .btn-secondary { background: var(--secondary); border-color: var(--secondary); color: white; }
     .btn-destructive { background: var(--error); border-color: var(--error); color: white; }
 
-    section {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      align-items: center;
-      margin-top: 1rem;
-    }
-
-    .ml-auto {
-      margin-left: auto;
-    }
-
     .glass {
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       padding: 1rem;
-      border-radius: 0;
-      margin-top: 1rem;
+      border-radius: 8px;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -105,6 +128,15 @@
       color: var(--success);
     }
 
+    .logs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
     .logs {
       flex: 1;
       overflow: auto;
@@ -112,6 +144,7 @@
       white-space: pre-wrap;
       border: 1px solid var(--border);
       padding: 0.5rem;
+      border-radius: 4px;
     }
 
     .logs * {
@@ -140,6 +173,7 @@
 
     .status {
       font-size: 0.9rem;
+      margin-top: 0.5rem;
     }
 
     .status.success { color: var(--success); }
@@ -157,6 +191,7 @@
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
     }
 
     .text-muted-foreground {
@@ -185,43 +220,84 @@
       background: rgba(255, 255, 255, 0.1);
       color: var(--text);
     }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+      .controls-section {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+      
+      .status-info {
+        margin-left: 0;
+        margin-top: 0.5rem;
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        min-width: auto;
+        width: 100%;
+      }
+      
+      .control-buttons {
+        flex-wrap: wrap;
+      }
+      
+      .status-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+    }
   </style>
 </head>
 <body>
     <div class="container">
   
-      <section>
-        <img class="logo" src="static/logo.png">
-        <button id="start-service" class="btn-primary">Start</button>
-        <button id="stop-service" class="btn-destructive">Stop</button>
-        <button id="restart-service" class="btn-secondary">Restart</button>
-        <button id="clear-logs">Clear Logs</button>
-        <a href="/download-logs" download><button id="download-logs">Download Full Logs</button></a>
-        <label class="ml-auto">
-          <input type="checkbox" id="auto-scroll" checked>
-          Auto-scroll
-        </label>
-      </section>
+      <div class="controls-section">
+        <img class="logo" src="static/logo.png" alt="VEIN Server Logo">
+        
+        <div class="control-buttons">
+          <button id="start-service" class="btn-primary">Start</button>
+          <button id="stop-service" class="btn-destructive">Stop</button>
+          <button id="restart-service" class="btn-secondary">Restart</button>
+          <button id="clear-logs">Clear Logs</button>
+          <a href="/download-logs" download><button id="download-logs">Download Full Logs</button></a>
+        </div>
+
+        <div class="status-info">
+          <div class="status-item">
+            <span class="info-label">Status:</span>
+            <span id="service-status" class="service-status unknown">Unknown</span>
+          </div>
+          <div class="status-item">
+            <span class="info-label">Started:</span>
+            <span id="service-started" class="info-value">Unknown</span>
+          </div>
+          <div class="status-item">
+            <span class="info-label">Uptime:</span>
+            <span id="service-uptime" class="info-value">Unknown</span>
+          </div>
+        </div>
+      </div>
   
       <div id="restart-status" class="status"></div>
   
       <div class="glass">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
-          <h2 style="font-size: 1.1rem; font-weight: 600;">Logs</h2>
-          <div style="display: flex; align-items: center; gap: 1.5rem; font-size: 0.85rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span class="info-label">Status:</span>
-              <span id="service-status" class="service-status unknown">Unknown</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span class="info-label">Uptime:</span>
-              <span id="service-uptime" class="info-value">Unknown</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span class="info-label">Started:</span>
-              <span id="service-started" class="info-value">Unknown</span>
-            </div>
-            <span id="log-count" class="text-muted-foreground">0 entries</span>
+        <div class="logs-header">
+          <h2 style="font-size: 1.1rem; font-weight: 600; margin: 0;">Logs</h2>
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;">
+              <input type="checkbox" id="filter-errors">
+              Show Errors Only
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem;">
+              <input type="checkbox" id="auto-scroll" checked>
+              Auto-scroll
+            </label>
           </div>
         </div>
         <div id="logs" class="logs"></div>
@@ -240,8 +316,8 @@
   
     <script>
       const logsContainer = document.getElementById("logs");
-      const logCount = document.getElementById("log-count");
       const autoScroll = document.getElementById("auto-scroll");
+      const filterErrors = document.getElementById("filter-errors");
       const statusBox = document.getElementById("restart-status");
       const dialog = document.getElementById("confirm-dialog");
       const confirmMessage = document.getElementById("confirm-message");
@@ -251,6 +327,7 @@
       const serviceStarted = document.getElementById("service-started");
       
       let logs = [];
+      let allLogElements = [];
 
       function updateStatus(type, msg) {
         statusBox.className = `status ${type}`;
@@ -264,13 +341,34 @@
         const lower = line.toLowerCase();
         if (lower.includes("error")) {
           div.classList.add("log-line", "error");
+          div.dataset.logType = "error";
         } else if (lower.includes("warning") || lower.includes("warn")) {
           div.classList.add("log-line", "warning");
+          div.dataset.logType = "warning";
         } else if (lower.includes("info")) {
           div.classList.add("log-line", "info");
+          div.dataset.logType = "info";
+        } else {
+          div.dataset.logType = "normal";
         }
 
         return div;
+      }
+
+      function filterLogs() {
+        const showErrorsOnly = filterErrors.checked;
+        
+        allLogElements.forEach(element => {
+          if (showErrorsOnly) {
+            element.style.display = element.dataset.logType === "error" ? "block" : "none";
+          } else {
+            element.style.display = "block";
+          }
+        });
+
+        if (autoScroll.checked) {
+          logsContainer.scrollTop = logsContainer.scrollHeight;
+        }
       }
 
       function fetchLogs() {
@@ -285,14 +383,11 @@
               newLogs.forEach(log => {
                 const line = highlightLog(log);
                 logsContainer.appendChild(line);
+                allLogElements.push(line);
               });
               
-              // Update counter
-              logCount.textContent = `${logs.length} entries`;
-              
-              if (autoScroll.checked) {
-                logsContainer.scrollTop = logsContainer.scrollHeight;
-              }
+              // Apply current filter
+              filterLogs();
             }
           })
           .catch(err => console.error("Error fetching logs:", err));
@@ -345,10 +440,13 @@
           .then(() => {
             logsContainer.innerHTML = "";
             logs = [];
-            logCount.textContent = "0 entries";
+            allLogElements = [];
           })
           .catch(() => alert("Failed to clear logs."));
       };
+
+      // Add event listener for error filter
+      filterErrors.addEventListener("change", filterLogs);
 
       document.getElementById("restart-service").onclick = () => confirmAndRun("restart", "/restart-service");
       document.getElementById("stop-service").onclick = () => confirmAndRun("stop", "/stop-service");
