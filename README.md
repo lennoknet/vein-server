@@ -33,3 +33,10 @@ Dashboard:   `http://<your-server-ip>:5000`
 
 ### backup-vein-server.sh
 ![App Screenshot](https://i.imgur.com/6F7sSN9.png)
+
+## Planned Features
+
+- Server Reset/Wipe with confirmation dialog
+- RCON messaging once implemented in server, for MOTD, server events, etc.
+- System stats such as CPU usage, MEM usage, and save backup storage size monitoring
+- Settings menu for changing server config
