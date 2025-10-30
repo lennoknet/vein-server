@@ -196,7 +196,7 @@ create_steam_user() {
         echo -e "   ${YELLOW}Steam user already exists. Skipping.${NC}"
     else
         STEAM_PASSWORD=$(openssl rand -base64 12)
-        run_silent "Creating steam user" "useradd -m -s /bin/bash steam"
+        run_silent "Creating steam user" "/usr/sbin/useradd -m -s /bin/bash steam"
         run_silent "Setting steam user password" "echo 'steam:${STEAM_PASSWORD}' | chpasswd"
     fi
 }
@@ -205,17 +205,17 @@ create_steam_user() {
 install_steamcmd() {
     section_header "Installing SteamCMD"
     
-    run_silent "Creating Steam directory" "runuser -l steam -c 'mkdir -p ~/Steam'"
-    run_silent "Downloading SteamCMD" "runuser -l steam -c 'cd ~/Steam && curl -sqL \"https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz\" | tar zxvf -'"
+    run_silent "Creating Steam directory" "/usr/sbin/runuser -l steam -c 'mkdir -p ~/Steam'"
+    run_silent "Downloading SteamCMD" "/usr/sbin/runuser -l steam -c 'cd ~/Steam && curl -sqL \"https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz\" | tar zxvf -'"
 }
 
 # Function to install VEIN server
 install_vein_server() {
     section_header "Installing VEIN Server"
     
-    echo -e "   ${YELLOW}⚙️  Installing VEIN server (this may take a while, downloading about 15GB)...${NC}"
+    echo -e "   ${YELLOW}⚙️  Installing VEIN server (this may some time, downloading about 15GB)...${NC}"
     
-    if runuser -l steam -c "~/Steam/steamcmd.sh +force_install_dir ${INSTALL_PATH} +login anonymous +app_update 2131400 validate +quit" > /dev/null 2>&1; then
+    if /usr/sbin/runuser -l steam -c "~/Steam/steamcmd.sh +force_install_dir ${INSTALL_PATH} +login anonymous +app_update 2131400 validate +quit" > /dev/null 2>&1; then
         echo -e "   ${GREEN}✓ VEIN server installed successfully${NC}"
     else
         echo -e "   ${RED}✗ Failed to install VEIN server${NC}"
