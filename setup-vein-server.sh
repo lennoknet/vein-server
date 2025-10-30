@@ -213,7 +213,7 @@ install_steamcmd() {
 install_vein_server() {
     section_header "Installing VEIN Server"
     
-    echo -e "   ${YELLOW}⚙️  Installing VEIN server (this may some time, downloading about 15GB)...${NC}"
+    echo -e "   ${YELLOW}⚙️  Installing VEIN server (this may take some time, downloading about 15GB)...${NC}"
     
     if /usr/sbin/runuser -l steam -c "~/Steam/steamcmd.sh +force_install_dir ${INSTALL_PATH} +login anonymous +app_update 2131400 validate +quit" > /dev/null 2>&1; then
         echo -e "   ${GREEN}✓ VEIN server installed successfully${NC}"
