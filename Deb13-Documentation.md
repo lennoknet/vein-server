@@ -1,7 +1,7 @@
 ### Preparation
 
 At debian installation we here used US locale and keyboard, East Coast time zone, set up the admin root with password 12345678 and user control with password 1234.
-As software packages we deselected all desktop window managers and selected SSH, so only standard-system utilities and SSH server was selected.
+As software packages we deselected all desktop window managers and selected SSH, so only standard-system utilities and SSH server was selected. This you may adjust to your needs.
 
 After installation, find out the IP address to connect via ssh user "control" and enter.
 
