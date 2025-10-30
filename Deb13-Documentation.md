@@ -26,15 +26,15 @@ open /etc/network/interfaces in the editor by
 
 comment out the dhcp line and add your static details below as follows:
 
-``# The primary network interface
-allow-hotplug enp0s3
-#iface enp0s3 inet dhcp
-iface enp0s3 inet static
- address 192.168.42.200
- netmask 255.255.255.0
- gateway 192.168.42.1 # your router
- dns-nameservers 192.168.42.1 # your router or DNS of quad9/cloudflare/google
- dns-domain somewhere.lan # your local domain - optional``
+``# The primary network interface``
+``allow-hotplug enp0s3``
+``#iface enp0s3 inet dhcp``
+``iface enp0s3 inet static``
+ ``address 192.168.42.200``
+ ``netmask 255.255.255.0``
+ ``gateway 192.168.42.1 # your router``
+ ``dns-nameservers 192.168.42.1 # your router or DNS of quad9/cloudflare/google``
+ ``dns-domain somewhere.lan # your local domain - optional``
 
 restart the network
 ``systemctl restart networking``
@@ -46,36 +46,36 @@ If you have been connected with ssh, you get disconnected. Connect to your new I
 We install git
 
 ``su`` and root password
-``apt update
-apt install -y git
-exit``
+``apt update``
+``apt install -y git``
+``exit``
 
 If you are using Debian 13 we need to break it a little bit, this does not apply to Debian 12
 
-``su
-nano /etc/apt/sources.list``
+``su``
+``nano /etc/apt/sources.list``
 Add following at the end:
-``# Unstable
-deb https://deb.debian.org/debian/ unstable main contrib non-free
-deb-src https://deb.debian.org/debian/ unstable main contrib non-free``
+``# Unstable``
+``deb https://deb.debian.org/debian/ unstable main contrib non-free``
+``deb-src https://deb.debian.org/debian/ unstable main contrib non-free``
 
 Save & close. (CTRL+X) + Y
 
 ``nano /etc/apt/preferences``
 Add following:
-``Package: *
-Pin: release a=unstable
-Pin-Priority: -1000``
+``Package: *``
+``Pin: release a=unstable``
+``Pin-Priority: -1000``
 
 Save & close.
 
 Run:
 
-``apt update && apt-get -t unstable install software-properties-common
-apt-add-repository non-free
-dpkg --add-architecture i386
-apt update
-exit``
+``apt update && apt-get -t unstable install software-properties-common``
+``apt-add-repository non-free``
+``dpkg --add-architecture i386``
+``apt update``
+``exit``
 
 If you are for some reason using Debian 12 you can directly do
 
@@ -97,7 +97,3 @@ Download the installation script:
 ``./setup-vein-server.sh``
 
 Follow instructions on your screen.
-
-
-
-
