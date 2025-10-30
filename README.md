@@ -7,7 +7,7 @@ This solution consists of a bash script that automates the process described at 
 ## Prerequisites
 
 Refer to https://developer.valvesoftware.com/wiki/SteamCMD#Debian
-You need to have software-properties-common installed as well as non-free repository and i386 architecture. Recommendation is to stay with Debian 12 for gameservers for a while.
+You need to have software-properties-common installed as well as non-free repository and i386 architecture.
 
 ## Installation
 
