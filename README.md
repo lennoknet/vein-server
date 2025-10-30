@@ -9,6 +9,10 @@ This solution consists of a bash script that automates the process described at 
 Refer to https://developer.valvesoftware.com/wiki/SteamCMD#Debian
 You need to have software-properties-common installed as well as non-free repository and i386 architecture.
 
+If you have no clue of Linux, you may also use my step-by-step manual to set up the machine to be able to run the script:
+https://github.com/lennoknet/vein-server/blob/main/Deb13-Documentation.md
+NAT and Port rules for your router is then your only thing you need to work on yourself.
+
 ## Installation
 
 Ensure you have Debian 12 or 13 installed properly, given your machine a static IP, internet access and ensure the query port and game port you want to use are accessible through NAT.
