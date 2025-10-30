@@ -35,6 +35,7 @@ comment out the dhcp line and add your static details below as follows:
  ``gateway 192.168.42.1 # your router``
  ``dns-nameservers 192.168.42.1 # your router or DNS of quad9/cloudflare/google``
  ``dns-domain somewhere.lan # your local domain - optional``
+     
 
 restart the network
 ``systemctl restart networking``
