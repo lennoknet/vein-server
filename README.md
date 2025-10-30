@@ -23,7 +23,6 @@ Start server:     `systemctl start vein-server.service`
 Stop server:      `systemctl stop vein-server.service`  
 Restart server:   `systemctl restart vein-server.service`  
 View logs:       `journalctl -u vein-server.service -f`  
-Dashboard:   `http://<your-server-ip>:5000`  
 
 ## Screenshots
 
