@@ -26,23 +26,17 @@ open /etc/network/interfaces in the editor by
 
 comment out the dhcp line and add your static details below as follows:
 
-``# The primary network interface``
-
-``allow-hotplug enp0s3``
-
-``#iface enp0s3 inet dhcp``
-
-``iface enp0s3 inet static``
-
- ``address 192.168.42.200``
- 
- ``netmask 255.255.255.0``
- 
- ``gateway 192.168.42.1 # your router``
- 
- ``dns-nameservers 192.168.42.1 # your router or DNS of quad9/cloudflare/google``
- 
- ``dns-domain somewhere.lan # your local domain - optional``
+```bash
+# The primary network interface``
+allow-hotplug enp0s3``
+#iface enp0s3 inet dhcp``
+iface enp0s3 inet static``
+ address 192.168.42.200``
+ netmask 255.255.255.0``
+ gateway 192.168.42.1 # your router``
+ dns-nameservers 192.168.42.1 # your router or DNS of quad9/cloudflare/google
+ dns-domain somewhere.lan # your local domain - optional
+```
      
 
 restart the network
@@ -70,11 +64,11 @@ If you are using Debian 13 we need to break it a little bit, this does not apply
 
 Add following at the end:
 
-``# Unstable``
-
-``deb https://deb.debian.org/debian/ unstable main contrib non-free``
-
-``deb-src https://deb.debian.org/debian/ unstable main contrib non-free``
+```bash
+# Unstable
+deb https://deb.debian.org/debian/ unstable main contrib non-free
+deb-src https://deb.debian.org/debian/ unstable main contrib non-free
+```
 
 
 Save & close. (CTRL+X) + Y
@@ -83,25 +77,25 @@ Save & close. (CTRL+X) + Y
 
 Add following:
 
-``Package: *``
-
-``Pin: release a=unstable``
-
-``Pin-Priority: -1000``
+```bash
+Package: *
+Pin: release a=unstable
+Pin-Priority: -1000
+```
 
 Save & close.
 
 Run:
 
-``apt update && apt-get -t unstable install software-properties-common``
+`apt update && apt-get -t unstable install software-properties-common`
 
-``apt-add-repository non-free``
+`apt-add-repository non-free`
 
-``dpkg --add-architecture i386``
+`dpkg --add-architecture i386`
 
-``apt update``
+`apt update`
 
-``exit``
+`exit`
 
 If you are for some reason using Debian 12 you can directly do
 
