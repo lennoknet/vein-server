@@ -27,13 +27,21 @@ open /etc/network/interfaces in the editor by
 comment out the dhcp line and add your static details below as follows:
 
 ``# The primary network interface``
+
 ``allow-hotplug enp0s3``
+
 ``#iface enp0s3 inet dhcp``
+
 ``iface enp0s3 inet static``
+
  ``address 192.168.42.200``
+ 
  ``netmask 255.255.255.0``
+ 
  ``gateway 192.168.42.1 # your router``
+ 
  ``dns-nameservers 192.168.42.1 # your router or DNS of quad9/cloudflare/google``
+ 
  ``dns-domain somewhere.lan # your local domain - optional``
      
 
@@ -47,25 +55,38 @@ If you have been connected with ssh, you get disconnected. Connect to your new I
 We install git
 
 ``su`` and root password
+
 ``apt update``
+
 ``apt install -y git``
+
 ``exit``
 
 If you are using Debian 13 we need to break it a little bit, this does not apply to Debian 12
 
 ``su``
+
 ``nano /etc/apt/sources.list``
+
 Add following at the end:
+
 ``# Unstable``
+
 ``deb https://deb.debian.org/debian/ unstable main contrib non-free``
+
 ``deb-src https://deb.debian.org/debian/ unstable main contrib non-free``
+
 
 Save & close. (CTRL+X) + Y
 
 ``nano /etc/apt/preferences``
+
 Add following:
+
 ``Package: *``
+
 ``Pin: release a=unstable``
+
 ``Pin-Priority: -1000``
 
 Save & close.
@@ -73,18 +94,27 @@ Save & close.
 Run:
 
 ``apt update && apt-get -t unstable install software-properties-common``
+
 ``apt-add-repository non-free``
+
 ``dpkg --add-architecture i386``
+
 ``apt update``
+
 ``exit``
 
 If you are for some reason using Debian 12 you can directly do
 
 ``su``
+
 ``apt install software-properties-common``
+
 ``apt-add-repository non-free``
+
 ``dpkg --add-architecture i386``
+
 ``apt update``
+
 ``exit``
 
 Now you are prepared to run the rest by script!
@@ -92,9 +122,13 @@ Now you are prepared to run the rest by script!
 Download the installation script:
 
 ``git clone https://github.com/lennoknet/vein-server.git``
+
 ``cd vein-server``
+
 ``chmod +x setup-vein-server.sh``
+
 ``su`` and root password
+
 ``./setup-vein-server.sh``
 
 Follow instructions on your screen.
