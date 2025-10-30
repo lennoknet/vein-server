@@ -4,6 +4,11 @@ This is a guided bash script for easy setup of a VEIN dedicated server and backu
 
 This solution consists of a bash script that automates the process described at https://ramjet.notion.site/dedicated-servers (as of May 2, 2025), a backup script that can manually or daily backup the servers save data.
 
+## Prerequisites
+
+Refer to https://developer.valvesoftware.com/wiki/SteamCMD#Debian
+You need to have software-properties-common installed as well as non-free repository and i386 architecture. Recommendation is to stay with Debian 12 for gameservers for a while.
+
 ## Installation
 
 Ensure you have Debian 12 or 13 installed properly, given your machine a static IP, internet access and ensure the query port and game port you want to use are accessible through NAT.
