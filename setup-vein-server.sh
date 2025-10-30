@@ -181,11 +181,11 @@ install_dependencies() {
 configure_firewall() {
     section_header "Configuring Firewall"
     
-    run_silent "Allowing game port ${PORT}/udp" "ufw allow ${PORT}/udp"
-    run_silent "Allowing query port ${QUERY_PORT}/udp" "ufw allow ${QUERY_PORT}/udp"
+    run_silent "Allowing game port ${PORT}/udp" "/usr/sbin/ufw allow ${PORT}/udp"
+    run_silent "Allowing query port ${QUERY_PORT}/udp" "/usr/sbin/ufw allow ${QUERY_PORT}/udp"
 #    run_silent "Allowing dashboard port ${DASH_PORT}/tcp" "ufw allow ${DASH_PORT}/tcp"
-    run_silent "Allowing ssh port 22/tcp" "ufw allow 22/tcp"
-    run_silent "Enabling firewall" "ufw --force enable"
+    run_silent "Allowing ssh port 22/tcp" "/usr/sbin/ufw allow 22/tcp"
+    run_silent "Enabling firewall" "/usr/sbin/ufw --force enable"
 }
 
 # Function to create steam user
