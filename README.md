@@ -1,10 +1,12 @@
 # VEIN Server
 
-This is a guided bash script for easy setup of a VEIN Demo dedicated server including a dashboard and backup functions.   
+This is a guided bash script for easy setup of a VEIN dedicated server and backup functions for command line interface (CLI) users only. The dashboard installation is currently deactivated.
 
-This solution consists of a bash script that automates the process described at https://ramjet.notion.site/dedicated-servers (as of May 2, 2025), a backup script that can manually or daily backup the servers save data, and a Python program that serves a dashboard for ease of use starting/stopping and logging the server.
+This solution consists of a bash script that automates the process described at https://ramjet.notion.site/dedicated-servers (as of May 2, 2025), a backup script that can manually or daily backup the servers save data.
 
 ## Installation
+
+Ensure you have Debian 12 or 13 installed properly, given your machine a static IP, internet access and ensure the query port and game port you want to use are accessible through NAT.
 
 To install the VEIN Server, just clone the repo, make the install script executable, and then run it:
 
@@ -25,9 +27,6 @@ Dashboard:   `http://<your-server-ip>:5000`
 
 ## Screenshots
 
-### Dashboard
-![App Screenshot](https://i.imgur.com/1pDEitr.png)
-
 ### setup-vein-server.sh
 ![App Screenshot](https://i.imgur.com/jaJuMP4.png)
 
@@ -36,7 +35,4 @@ Dashboard:   `http://<your-server-ip>:5000`
 
 ## Planned Features
 
-- Server Reset/Wipe with confirmation dialog
-- RCON messaging once implemented in server, for MOTD, server events, etc.
-- System stats such as CPU usage, MEM usage, and save backup storage size monitoring
-- Settings menu for changing server config
+Follow the main branch - I only ensured this script is working out of the box when set up debian 12 or 13.
