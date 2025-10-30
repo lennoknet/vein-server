@@ -27,13 +27,13 @@ open /etc/network/interfaces in the editor by
 comment out the dhcp line and add your static details below as follows:
 
 ```bash
-# The primary network interface``
-allow-hotplug enp0s3``
-#iface enp0s3 inet dhcp``
-iface enp0s3 inet static``
- address 192.168.42.200``
- netmask 255.255.255.0``
- gateway 192.168.42.1 # your router``
+# The primary network interface
+allow-hotplug enp0s3
+#iface enp0s3 inet dhcp
+iface enp0s3 inet static
+ address 192.168.42.200
+ netmask 255.255.255.0
+ gateway 192.168.42.1 # your router
  dns-nameservers 192.168.42.1 # your router or DNS of quad9/cloudflare/google
  dns-domain somewhere.lan # your local domain - optional
 ```
