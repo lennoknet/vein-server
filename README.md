@@ -1,6 +1,6 @@
 # VEIN Server
 
-This is a guided bash script for easy setup of a VEIN dedicated server and backup functions for command line interface (CLI) users only. The dashboard installation is currently deactivated.
+This is a guided bash script for easy setup of a VEIN dedicated server and backup functions for command line interface (CLI) users only. The dashboard installation is currently deactivated!
 
 This solution consists of a bash script that automates the process described at https://ramjet.notion.site/dedicated-servers (as of May 2, 2025), a backup script that can manually or daily backup the servers save data.
 
@@ -19,7 +19,7 @@ NAT and Port rules for your router is then your only thing you need to work on y
 
 Ensure you have Debian 12 or 13 installed properly, given your machine a static IP, internet access and ensure the query port and game port you want to use are accessible through NAT.
 
-To install the VEIN Server, just clone the repo, make the install script executable, and then run it:
+To install the VEIN Server, please clone the repo, make the install script executable, and then run it:
 
 ```bash
 git clone https://github.com/lennoknet/vein-server.git
@@ -45,4 +45,4 @@ View logs:       `journalctl -u vein-server.service -f`
 
 ## Planned Features
 
-Follow the main branch - I only ensured this script is working out of the box when set up debian 12 or 13.
+Follow the main branch - I only ensured this script is working out of the box when set up debian 13 or 12.
