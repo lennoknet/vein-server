@@ -324,7 +324,7 @@ display_completion() {
     echo -e "   ${BOLD}Restart server:${NC} systemctl restart vein-server.service"
     echo -e "   ${BOLD}Check status:${NC} systemctl status vein-server.service"
     echo -e "   ${BOLD}View logs:${NC} journalctl -u vein-server.service -f"
-    echo -e "   ${BOLD}View dashboard:${NC} http://$(hostname -I | awk '{print $1}'):5000"
+    #echo -e "   ${BOLD}View dashboard:${NC} http://$(hostname -I | awk '{print $1}'):5000"
 
     echo ""
     
