@@ -175,7 +175,6 @@ install_dependencies() {
     run_silent "Updating package lists" "apt update"
     run_silent "Installing required packages" "apt install -y ufw curl lib32gcc-s1 whiptail dialog"
     run_silent "Installing more required packages" "apt install -y libatomic1 libasound2 libpulse0"
-    run_silent "Installing steam requirements" "add-apt-repository multiverse && dpkg --add-architecture i386 && apt update"
 }
 
 # Function to configure firewall
