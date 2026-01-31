@@ -1,3 +1,5 @@
+This branch here has known bugs and it not maintained anymore - check out the forks or use it as guidline only.
+
 # VEIN Server for Debian
 
 This is a guided bash script for easy setup of a VEIN dedicated server and backup functions for command line interface (CLI) users only. The dashboard installation is currently deactivated!
