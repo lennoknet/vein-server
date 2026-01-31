@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Enhanced Elysium Server Installer
-# This script installs and configures a Echoes of Elysium game server as a service
+# Enhanced VEIN Server Installer
+# This script installs and configures a VEIN game server
 
 # Terminal colors
 RED='\033[0;31m'
@@ -14,28 +14,30 @@ NC='\033[0m' # No Color
 BOLD='\033[1m'
 
 # Variables with defaults
-SERVER_NAME="My New Elysium Server"
-SERVER_ADDR="0.0.0.0"
-SERVER_PORT="27015"
-SERVER_DATA="./GameData/"
-SERVER_WORLD="./world/"
-SERVER_LOGS="./logs/"
-SERVER_PASSWORD="secret"
-SERVER_SAVEFREQ="5"
-SERVER_PROFILE="false"
-SERVER_BACKUPS="true"
-SERVER_BAK_FREQ="30"
-SERVER_BAK_MAX="5"
-SERVER_CHANNEL="public"
-INSTALL_PATH="/home/steam/Steam/elysium-server"
+SERVER_NAME="My New VEIN Server"
+SERVER_DESC="Vanilla Server"
+PUBLIC="true"
+MAX_PLAYERS=16
+SUPER_ADMIN_ID=""
+ADMIN_ID=""
+PASSWORD=""
+PORT=7777
+QUERY_PORT=27015
+VAC_ENABLED=0
+HEARTBEAT_INTERVAL=5.0
+AUTO_UPDATE=true
+AUTO_RESTART=true
+BIND_ADDR="0.0.0.0"
+INSTALL_PATH="/home/steam/Steam/vein-server"
 START_ON_BOOT=true
+DASH_PORT=5000
 
 # Function to display header
 display_header() {
     clear
-    echo -e "${BOLD}${BLUE}====================================================${NC}"
-    echo -e "${BOLD}${BLUE}    Echoes of Elysium Server Installation Script    ${NC}"
-    echo -e "${BOLD}${BLUE}====================================================${NC}"
+    echo -e "${BOLD}${BLUE}=======================================${NC}"
+    echo -e "${BOLD}${BLUE}    VEIN Server Installation Script    ${NC}"
+    echo -e "${BOLD}${BLUE}=======================================${NC}"
     echo ""
 }
 
@@ -77,34 +79,38 @@ configure_server() {
     display_header
     section_header "Server Configuration"
     
-    echo -e "Please configure your Elysium server settings:"
+    echo -e "Please configure your VEIN server settings:"
     echo ""
     
     # Server Name
     read -p "$(echo -e "${BOLD}Server name${NC} [${SERVER_NAME}]: ")" input
     SERVER_NAME=${input:-"$SERVER_NAME"}
+
+    # Server Description
+    read -p "$(echo -e "${BOLD}Server description${NC} [${SERVER_DESC}]: ")" input
+    SERVER_DESC=${input:-"$SERVER_DESC"}
     
-    # Public Address
-    read -p "$(echo -e "${BOLD}Binding IP${NC} (0.0.0.0=all)) [${SERVER_ADDR}]: ")" input
-    SERVER_ADDR=${input:-"$SERVER_ADDR"}
+    # Public Server
+    read -p "$(echo -e "${BOLD}Public listing?${NC} (true/false) [${PUBLIC}]: ")" input
+    PUBLIC=${input:-"$PUBLIC"}
     
-    # Server Port
-    read -p "$(echo -e "${BOLD}Server Port${NC} [${SERVER_PORT}]: ")" input
-    SERVER_PORT=${input:-"$SERVER_PORT"}
+    # Max Players
+    read -p "$(echo -e "${BOLD}Max players${NC} [${MAX_PLAYERS}]: ")" input
+    MAX_PLAYERS=${input:-"$MAX_PLAYERS"}
     
     # Server Password - Prompt for password with confirmation
     while true; do
-        read -p "$(echo -e "${BOLD}Server password${NC} (leave blank for none): ")" SERVER_PASSWORD
+        read -p "$(echo -e "${BOLD}Server password${NC} (leave blank for none): ")" PASSWORD
         
         # If password is blank, confirm that's what they want
-        if [ -z "$SERVER_PASSWORD" ]; then
+        if [ -z "$PASSWORD" ]; then
             read -p "$(echo -e "${YELLOW}Warning: No password means anyone can join. Continue?${NC} (y/n): ")" confirm
             if [[ "$confirm" =~ ^[Yy]$ ]]; then
                 break
             fi
         else
             read -p "$(echo -e "${BOLD}Confirm password${NC}: ")" PASSWORD_CONFIRM
-            if [ "$SERVER_PASSWORD" == "$PASSWORD_CONFIRM" ]; then
+            if [ "$PASSWORD" == "$PASSWORD_CONFIRM" ]; then
                 break
             else
                 echo -e "${RED}Passwords do not match. Please try again.${NC}"
@@ -112,48 +118,48 @@ configure_server() {
         fi
     done
     
-    # Data Path
-    read -p "$(echo -e "${BOLD}Data Path${NC} [${SERVER_DATA}]: ")" input
-    SERVER_DATA=${input:-"$SERVER_DATA"}
+    # Super Admin SteamID
+    read -p "$(echo -e "${BOLD}SuperAdmin SteamID${NC} [${SUPER_ADMIN_ID}]: ")" input
+    SUPER_ADMIN_ID=${input:-"$SUPER_ADMIN_ID"}
     
-    # World Path
-    read -p "$(echo -e "${BOLD}World Path${NC} (optional) [${SERVER_WORLD}]: ")" input
-    SERVER_WORLD=${input:-"$SERVER_WORLD"}
+    # Admin SteamID
+    read -p "$(echo -e "${BOLD}Admin SteamID${NC} (optional) [${ADMIN_ID}]: ")" input
+    ADMIN_ID=${input:-"$ADMIN_ID"}
     
     echo ""
     section_header "Advanced Settings"
     echo -e "Configure advanced server settings (optional):"
     echo ""
     
-    # Log Path
-    read -p "$(echo -e "${BOLD}Log Path${NC} [${SERVER_LOGS}]: ")" input
-    SERVER_LOGS=${input:-"$SERVER_LOGS"}
-	
-	# Save Frequency
-    read -p "$(echo -e "${BOLD}Save Frequency${NC} [${SERVER_SAVEFREQ}]: ")" input
-    SERVER_SAVEFREQ=${input:-"$SERVER_SAVEFREQ"}
-
-    # Server Profile
-    read -p "$(echo -e "${BOLD}Server Profile${NC} (true/false) [${SERVER_PROFILE}]: ")" input
-    SERVER_PROFILE=${input:-"$SERVER_PROFILE"}
-	
-    # Backup
-    read -p "$(echo -e "${BOLD}Backups${NC} (true/false) [${SERVER_BACKUPS}]: ")" input
-    SERVER_BACKUPS=${input:-"$SERVER_BACKUPS"}
+    # Game Port
+    read -p "$(echo -e "${BOLD}Game Port${NC} [${PORT}]: ")" input
+    PORT=${input:-"$PORT"}
     
-    # Backup Frequency
-    read -p "$(echo -e "${BOLD}Backup Frequency${NC} [${SERVER_BAK_FREQ}]: ")" input
-    SERVER_BAK_FREQ=${input:-"$SERVER_BAK_FREQ"}
-
-    # Backup Amount
-    read -p "$(echo -e "${BOLD}Backup max amount to keep${NC} [${SERVER_BAK_MAX}]: ")" input
-    SERVER_BAK_MAX=${input:-"$SERVER_BAK_MAX"}
-
-    # Server Channel
-    read -p "$(echo -e "${BOLD}Server Channel${NC} (public/beta) [${SERVER_CHANNEL}]: ")" input
-    SERVER_CHANNEL=${input:-"$SERVER_CHANNEL"}
+    # Query Port
+    read -p "$(echo -e "${BOLD}Query Port${NC} [${QUERY_PORT}]: ")" input
+    QUERY_PORT=${input:-"$QUERY_PORT"}
     
-     # Start on Boot
+    # VAC Enabled
+    read -p "$(echo -e "${BOLD}VAC Enabled${NC} (0/1) [${VAC_ENABLED}]: ")" input
+    VAC_ENABLED=${input:-"$VAC_ENABLED"}
+    
+    # Heartbeat Interval
+    read -p "$(echo -e "${BOLD}Heartbeat Interval${NC} [${HEARTBEAT_INTERVAL}]: ")" input
+    HEARTBEAT_INTERVAL=${input:-"$HEARTBEAT_INTERVAL"}
+    
+    # Bind Address
+    read -p "$(echo -e "${BOLD}Bind Address${NC} [${BIND_ADDR}]: ")" input
+    BIND_ADDR=${input:-"$BIND_ADDR"}
+    
+    # Auto Update
+    read -p "$(echo -e "${BOLD}Auto update on restart?${NC} (true/false) [${AUTO_UPDATE}]: ")" input
+    AUTO_UPDATE=${input:-"$AUTO_UPDATE"}
+    
+    # Auto Restart
+    read -p "$(echo -e "${BOLD}Auto restart on failure?${NC} (true/false) [${AUTO_RESTART}]: ")" input
+    AUTO_RESTART=${input:-"$AUTO_RESTART"}
+    
+    # Start on Boot
     read -p "$(echo -e "${BOLD}Start on boot?${NC} (true/false) [${START_ON_BOOT}]: ")" input
     START_ON_BOOT=${input:-"$START_ON_BOOT"}
     
@@ -167,7 +173,19 @@ install_dependencies() {
     section_header "Installing Dependencies"
     
     run_silent "Updating package lists" "apt update"
-    run_silent "Installing required packages" "apt install -y curl jo lib32gcc-s1 whiptail dialog"
+    run_silent "Installing required packages" "apt install -y ufw curl lib32gcc-s1 whiptail dialog"
+    run_silent "Installing more required packages" "apt install -y libatomic1 libasound2 libpulse0"
+}
+
+# Function to configure firewall
+configure_firewall() {
+    section_header "Configuring Firewall"
+    
+    run_silent "Allowing game port ${PORT}/udp" "/usr/sbin/ufw allow ${PORT}/udp"
+    run_silent "Allowing query port ${QUERY_PORT}/udp" "/usr/sbin/ufw allow ${QUERY_PORT}/udp"
+#    run_silent "Allowing dashboard port ${DASH_PORT}/tcp" "ufw allow ${DASH_PORT}/tcp"
+    run_silent "Allowing ssh port 22/tcp" "/usr/sbin/ufw allow 22/tcp"
+    run_silent "Enabling firewall" "/usr/sbin/ufw --force enable"
 }
 
 # Function to create steam user
@@ -179,7 +197,7 @@ create_steam_user() {
     else
         STEAM_PASSWORD=$(openssl rand -base64 12)
         run_silent "Creating steam user" "/usr/sbin/useradd -m -s /bin/bash steam"
-        run_silent "Setting steam user password" "echo 'steam:${STEAM_PASSWORD}' | /usr/sbin/chpasswd"
+        run_silent "Setting steam user password" "echo 'steam:${STEAM_PASSWORD}' | /usr/bin/chpasswd"
     fi
 }
 
@@ -191,47 +209,56 @@ install_steamcmd() {
     run_silent "Downloading SteamCMD" "/usr/sbin/runuser -l steam -c 'cd ~/Steam && curl -sqL \"https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz\" | tar zxvf -'"
 }
 
-# Function to install Elysium server
-install_elys_server() {
-    section_header "Installing Elysium Server"
+# Function to install VEIN server
+install_vein_server() {
+    section_header "Installing VEIN Server"
     
-    echo -e "   ${YELLOW}⚙️  Installing Echoes of Elysium server (this may take a while)...${NC}"
+    echo -e "   ${YELLOW}⚙️  Installing VEIN server (this may take some time, downloading about 15GB)...${NC}"
     
-    if /usr/sbin/runuser -l steam -c "~/Steam/steamcmd.sh +force_install_dir ${INSTALL_PATH} +login anonymous +app_update 2915100 -beta ${SERVER_CHANNEL} validate +quit" > /dev/null 2>&1; then
-        echo -e "   ${GREEN}✓ Elysium server installed successfully${NC}"
+    if /usr/sbin/runuser -l steam -c "~/Steam/steamcmd.sh +force_install_dir ${INSTALL_PATH} +login anonymous +app_update 2131400 validate +quit" > /dev/null 2>&1; then
+        echo -e "   ${GREEN}✓ VEIN server installed successfully${NC}"
     else
-        echo -e "   ${RED}✗ Failed to install Elysium server${NC}"
+        echo -e "   ${RED}✗ Failed to install VEIN server${NC}"
         echo -e "   ${RED}Please check your internet connection and try again${NC}"
         exit 1
     fi
-
-
-    run_silent "Remove previous symlink if exist" "rm -f \"${INSTALL_PATH}/linux64/libsteam_api.so\""
-    run_silent "Creating symlink for libsteam_api.so" "mkdir -p \"${INSTALL_PATH}/linux64/\" && ln -s \"${INSTALL_PATH}/libsteam_api.so\" \"${INSTALL_PATH}/linux64/\""
-
+    
+# symlink instead of copying is preferred, monitoring behaviour
+    run_silent "Copying steamclient.so" "mkdir -p \"${INSTALL_PATH}/Vein/Binaries/Linux/\" && cp /home/steam/Steam/linux64/steamclient.so \"${INSTALL_PATH}/Vein/Binaries/Linux/steamclient.so\""
 }
 
 # Function to create server config
 create_server_config() {
     section_header "Creating Server Configuration"
+    
+    CONFIG_DIR="${INSTALL_PATH}/Vein/Saved/Config/LinuxServer"
+    run_silent "Creating config directory" "mkdir -p \"${CONFIG_DIR}\""
+    
+    # Write Game.ini
+    CONFIG_FILE="${CONFIG_DIR}/Game.ini"
+    echo -e "   ${YELLOW}⚙️  Writing server configuration...${NC}"
+    
+    cat > "${CONFIG_FILE}" <<EOF
+[/Script/Engine.GameSession]
+MaxPlayers=${MAX_PLAYERS}
 
-# Create Config JSON
-jo -p \
-    address="${SERVER_ADDR}" \
-    port=${SERVER_PORT} \
-    name="${SERVER_NAME}" \
-    password="${SERVER_PASSWORD}" \
-    gameDataDir="${SERVER_DATA}" \
-    worldDataDir="${SERVER_WORLD}" \
-    logsDir="${SERVER_LOGS}" \
-    enableProfiling=${SERVER_PROFILE} \
-    saveFreqMins=${SERVER_SAVEFREQ} \
-    backupsEnabled=${SERVER_BACKUPS} \
-    backupFreqMins=${SERVER_BAK_FREQ} \
-    maxBackups=${SERVER_BAK_MAX} \
-    > ${INSTALL_PATH}/config.json
+[/Script/Vein.VeinGameSession]
+bPublic=${PUBLIC}
+ServerName="${SERVER_NAME}"
+ServerDesciption="${SERVER_DESC}"
+BindAddr=${BIND_ADDR}
+SuperAdminSteamIDs=${SUPER_ADMIN_ID}
+$([ -n "${ADMIN_ID}" ] && echo "AdminSteamIDs=${ADMIN_ID}")
+HeartbeatInterval=${HEARTBEAT_INTERVAL}
+Password="${PASSWORD}"
 
+[OnlineSubsystemSteam]
+GameServerQueryPort=${QUERY_PORT}
+bVACEnabled=${VAC_ENABLED}
 
+[URL]
+Port=${PORT}
+EOF
     
     echo -e "   ${GREEN}✓${NC}"
 }
@@ -240,21 +267,28 @@ jo -p \
 create_systemd_service() {
     section_header "Creating SystemD Service"
     
-   
-    cat > /etc/systemd/system/elysium-server.service <<EOF
+    AUTO_UPDATE_CMD=""
+    if [ "${AUTO_UPDATE}" = "true" ]; then
+        AUTO_UPDATE_CMD="ExecStartPre=/home/steam/Steam/steamcmd.sh +force_install_dir ${INSTALL_PATH} +login anonymous +app_update 2131400 validate +quit"
+    fi
+    
+    RESTART_POLICY="no"
+    if [ "${AUTO_RESTART}" = "true" ]; then
+        RESTART_POLICY="on-failure"
+    fi
+    
+    cat > /etc/systemd/system/vein-server.service <<EOF
 [Unit]
-Description=Elysium Dedicated Server
+Description=VEIN Dedicated Server
 After=network.target
 
 [Service]
 Type=simple
 User=steam
 WorkingDirectory=${INSTALL_PATH}
-Environment="LD_LIBRARY_PATH=${INSTALL_PATH}:${INSTALL_PATH}/linux64"
-Environment="SteamAppId=2644050"
-ExecStartPre=/home/steam/Steam/steamcmd.sh +force_install_dir ${INSTALL_PATH} +login anonymous +app_update 2915100 -beta ${SERVER_CHANNEL} validate +quit
-ExecStart=${INSTALL_PATH}/ElysiumServer --config ${INSTALL_PATH}/config.json
-Restart=on-failure
+${AUTO_UPDATE_CMD}
+ExecStart=${INSTALL_PATH}/VeinServer.sh -QueryPort=${QUERY_PORT} -Port=${PORT}
+Restart=${RESTART_POLICY}
 RestartSec=10
 LimitNOFILE=10000
 
@@ -262,36 +296,35 @@ LimitNOFILE=10000
 WantedBy=multi-user.target
 EOF
     
-    run_silent "Setting permissions 1/3" "chown -R steam:steam ${INSTALL_PATH}"
-	run_silent "Setting permissions 2/3" "chmod -R 755 ${INSTALL_PATH}"
-	run_silent "Setting permissions 3/3" "chmod +x ${INSTALL_PATH}/ElysiumServer"
+    run_silent "Setting permissions" "chown -R steam:steam ${INSTALL_PATH}"
     run_silent "Reloading systemd daemon" "systemctl daemon-reload"
-    run_silent "Checking Public IP" "ExternalIP4=$(curl -s https://ipv4.myip.wtf/text)"
-
     
     if [ "${START_ON_BOOT}" = "true" ]; then
-        run_silent "Enabling service at boot" "systemctl enable elysium-server.service"
+        run_silent "Enabling service at boot" "systemctl enable vein-server.service"
     fi
 }
 
 # Function to display completion message
 display_completion() {
     display_header
-    echo -e "${GREEN}${BOLD}✓ Elysium Server Installation Completed Successfully!${NC}"
+    echo -e "${GREEN}${BOLD}✓ VEIN Server Installation Completed Successfully!${NC}"
     echo ""
     echo -e "Your server has been configured with the following settings:"
     echo -e "   ${BOLD}Server Name:${NC} ${SERVER_NAME}"
-	echo -e "   ${BOLD}Game Port:${NC} ${SERVER_PORT}"
-    echo -e "   ${BOLD}Public IP:${NC} ${ExternalIP4}"
+    echo -e "   ${BOLD}Public:${NC} ${PUBLIC}"
+    echo -e "   ${BOLD}Max Players:${NC} ${MAX_PLAYERS}"
     echo -e "   ${BOLD}Password Protected:${NC} $([ -n "${PASSWORD}" ] && echo "Yes" || echo "No")"
+    echo -e "   ${BOLD}Game Port:${NC} ${PORT}"
+    echo -e "   ${BOLD}Query Port:${NC} ${QUERY_PORT}"
     echo -e "   ${BOLD}Installation Path:${NC} ${INSTALL_PATH}"
     echo ""
     echo -e "${YELLOW}To manage your server:${NC}"
-    echo -e "   ${BOLD}Start server:${NC} systemctl start elysium-server.service"
-    echo -e "   ${BOLD}Stop server:${NC} systemctl stop elysium-server.service"
-    echo -e "   ${BOLD}Restart server:${NC} systemctl restart elysium-server.service"
-    echo -e "   ${BOLD}Check status:${NC} systemctl status elysium-server.service"
-    echo -e "   ${BOLD}View logs:${NC} journalctl -u elysium-server.service -f"
+    echo -e "   ${BOLD}Start server:${NC} systemctl start vein-server.service"
+    echo -e "   ${BOLD}Stop server:${NC} systemctl stop vein-server.service"
+    echo -e "   ${BOLD}Restart server:${NC} systemctl restart vein-server.service"
+    echo -e "   ${BOLD}Check status:${NC} systemctl status vein-server.service"
+    echo -e "   ${BOLD}View logs:${NC} journalctl -u vein-server.service -f"
+    #echo -e "   ${BOLD}View dashboard:${NC} http://$(hostname -I | awk '{print $1}'):5000"
 
     echo ""
     
@@ -300,16 +333,93 @@ display_completion() {
     else
         echo -e "Your server is ${YELLOW}not enabled${NC} to start automatically at boot."
     fi
-            
+    
     echo ""
-    echo -e 'Do you want to start the server now? (y/n): '
+    echo -e "Do you want to start the server now? (y/n): "
     read -r START_NOW
     if [[ "${START_NOW}" =~ ^[Yy]$ ]]; then
-        echo -e "${YELLOW}Starting Elysium server...${NC}"
-        systemctl start elysium-server.service
+        echo -e "${YELLOW}Starting VEIN server...${NC}"
+        systemctl start vein-server.service
         echo -e "${GREEN}Server started!${NC}"
     fi
 }
+
+# Function to install optional dashboard - system packages only
+# ##### this needs some rework for working with debian and ubuntu likewise, so not available in this fork #####
+#install_dashboard() {
+#    section_header "Dashboard Installation"
+#    read -p "Would you like to install the dashboard at http://$(hostname -I | awk '{print $1}'):5000? (y/n): " dashboard_choice
+#
+#    # Query Port
+#    read -p "$(echo -e "${BOLD}Dashboard Port${NC} [${DASH_PORT}]: ")" input
+#    DASH_PORT=${input:-"$DASH_PORT"}
+#
+#    if [[ "$dashboard_choice" =~ ^[Yy]$ ]]; then
+#        # User wants dashboard - proceed with installation
+#        section_header "Installing Python3 and Flask"
+#        run_silent "Installing python3" "apt install -y python3"
+#        
+#        # Try to install Flask via system package manager
+#        if ! run_silent "Installing Flask via apt" "apt install -y python3-flask"; then
+#            echo -e "${RED}Failed to install Flask via system packages.${NC}"
+#            echo -e "${YELLOW}Trying alternative method with pip...${NC}"
+#            
+#            run_silent "Installing python3-pip" "apt install -y python3-pip"
+#            
+#            # Use pip with --break-system-packages as last resort
+#            if ! run_silent "Installing Flask via pip" "python3 -m pip install --break-system-packages flask"; then
+#                echo -e "${RED}Failed to install Flask. Dashboard installation aborted.${NC}"
+#                return 1
+#            fi
+#        fi
+#
+#        section_header "Setting up Dashboard Service"
+#        DASHBOARD_PATH="/home/steam/vein-dashboard"
+#        SERVICE_FILE="/etc/systemd/system/vein-dashboard.service"
+#
+#        # Setup dashboard files
+#        run_silent "Creating dashboard directory" "mkdir -p \"${DASHBOARD_PATH}\""
+#        
+#        # Copy dashboard files or fail gracefully
+#        if [ -d "dash" ]; then
+#            run_silent "Copying dashboard files" "cp -r dash/* \"${DASHBOARD_PATH}/\""
+#            run_silent "Setting dashboard permissions" "chown -R steam:steam \"${DASHBOARD_PATH}\""
+#            
+#            # Create systemd service (no virtual environment)
+#            cat <<EOF > "$SERVICE_FILE"
+#[Unit]
+#Description=VEIN Dashboard
+#After=network.target
+#
+#[Service]
+#User=steam
+#WorkingDirectory=${DASHBOARD_PATH}
+#ExecStart=/usr/bin/python3 ${DASHBOARD_PATH}/app.py
+#Restart=always
+#
+#[Install]
+#WantedBy=multi-user.target
+#EOF
+#
+#            run_silent "Reloading systemd daemon" "systemctl daemon-reload"
+#            run_silent "Enabling dashboard service" "systemctl enable vein-dashboard"
+#            run_silent "Starting dashboard service" "systemctl start vein-dashboard"
+#
+#            echo -e "${GREEN}Dashboard installed and running at http://$(hostname -I | awk '{print $1}'):5000${NC}"
+#            echo -e "${YELLOW}Dashboard installed in: ${DASHBOARD_PATH}${NC}"
+#        else
+#            echo -e "${RED}Dashboard files not found in 'dash' directory.${NC}"
+#            echo -e "${YELLOW}Dashboard installation failed - files missing.${NC}"
+#            echo -e "${YELLOW}Please ensure the 'dash' directory with dashboard files exists.${NC}"
+#            # Clean up the partial installation
+#            run_silent "Cleaning up failed installation" "rm -rf \"${DASHBOARD_PATH}\""
+#            return 1
+#        fi
+#    else
+#        # User doesn't want dashboard - skip entirely
+#        echo -e "${YELLOW}Dashboard installation skipped.${NC}"
+#    fi
+#}
 
 # Main function
 main() {
@@ -318,15 +428,16 @@ main() {
     check_root
     display_header
     
-    echo -e "This script will install and configure a Elysium dedicated server."
+    echo -e "This script will install and configure a VEIN dedicated server."
     echo -e "It will perform the following steps:"
     echo -e "  1. Install required dependencies"
     echo -e "  2. Configure firewall rules"
     echo -e "  3. Create a steam user"
     echo -e "  4. Install SteamCMD"
-    echo -e "  5. Download and install the Elysium server"
+    echo -e "  5. Download and install the VEIN server"
     echo -e "  6. Configure server settings"
     echo -e "  7. Set up a systemd service"
+#    echo -e "  8. Optionally install a dashboard"
     echo ""
     echo -e "Press ${BOLD}ENTER${NC} to begin or ${BOLD}CTRL+C${NC} to cancel..."
     read -r
@@ -338,18 +449,13 @@ main() {
     echo -e "${YELLOW}Please review your settings:${NC}"
     echo ""
     echo -e "   ${BOLD}Server Name:${NC} ${SERVER_NAME}"
-    echo -e "   ${BOLD}Bind IP:${NC} ${SERVER_ADDR}"
-	echo -e "   ${BOLD}Server Port:${NC} ${SERVER_PORT}"
-    echo -e "   ${BOLD}Data Path:${NC} ${SERVER_DATA}"
-	echo -e "   ${BOLD}World Path:${NC} ${SERVER_WORLD}"
-	echo -e "   ${BOLD}Logs Path:${NC} ${SERVER_LOGS}"
+    echo -e "   ${BOLD}Public:${NC} ${PUBLIC}"
+    echo -e "   ${BOLD}Max Players:${NC} ${MAX_PLAYERS}"
     echo -e "   ${BOLD}Password Protected:${NC} $([ -n "${PASSWORD}" ] && echo "Yes" || echo "No")"
-    echo -e "   ${BOLD}Save Frequency:${NC} ${QUERY_PORT}"
-    echo -e "   ${BOLD}Profile:${NC} ${SERVER_PROFILE}"
-	echo -e "   ${BOLD}Backups:${NC} ${SERVER_BACKUPS}"
-	echo -e "   ${BOLD}Backup Frequency:${NC} ${SERVER_BAK_FREQ}"
-	echo -e "   ${BOLD}Backup Max Amount:${NC} ${SERVER_BAK_MAX}"
-    echo -e "   ${BOLD}Channel:${NC} ${SERVER_CHANNEL}"
+    echo -e "   ${BOLD}Game Port:${NC} ${PORT}"
+    echo -e "   ${BOLD}Query Port:${NC} ${QUERY_PORT}"
+    echo -e "   ${BOLD}Auto Update:${NC} ${AUTO_UPDATE}"
+    echo -e "   ${BOLD}Auto Restart:${NC} ${AUTO_RESTART}"
     echo -e "   ${BOLD}Start on Boot:${NC} ${START_ON_BOOT}"
     echo -e "   ${BOLD}Installation Path:${NC} ${INSTALL_PATH}"
     echo ""
@@ -363,11 +469,13 @@ main() {
     
     display_header
     install_dependencies
+    configure_firewall
     create_steam_user
     install_steamcmd
-    install_elys_server
+    install_vein_server
     create_server_config
     create_systemd_service
+#    install_dashboard
     display_completion
 }
 
